@@ -1,15 +1,11 @@
 // ==UserScript==
 // @name         Fic/Follower Display
-// @namespace    http://tampermonkey.net/
+// @namespace    https://github.com/ReluctusB
 // @version      0.1
 // @description  Displays an author's follower/fic ratio
 // @author       RB
 // @match        https://www.fimfiction.net/*
-// @exclude      https://www.fimfiction.net/manage/*
 // @grant        none
-// @run-at       document-end
-// @updateURL    https://github.com/ReluctusB/DataFiction.net/raw/master/fic_follower.core.js
-// @downloadURL  https://github.com/ReluctusB/DataFiction.net/raw/master/fic_follower.core.js
 // ==/UserScript==
 
 function cardFicFollow() {

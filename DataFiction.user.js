@@ -9,7 +9,7 @@
 // @run-at       document-end
 // @require      https://github.com/ReluctusB/DataFiction.net/raw/master/fic_follower.core.js
 // @require      https://github.com/ReluctusB/DataFiction.net/raw/master/view_vote.core.js
-// @require      https://github.com/ReluctusB/DataFiction.net/raw/master/settings_manager.user.js
+// @require      https://github.com/ReluctusB/DataFiction.net/raw/master/settings_manager.core.js
 // @updateURL    https://github.com/ReluctusB/DataFiction.net/raw/master/DataFiction.user.js
 // @downloadURL  https://github.com/ReluctusB/DataFiction.net/raw/master/DataFiction.user.js
 // ==/UserScript==

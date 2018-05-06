@@ -12,7 +12,7 @@
 // @require      https://github.com/ReluctusB/DataFiction.net/raw/master/settings_manager.user.js
 // @updateURL    https://github.com/ReluctusB/DataFiction.net/raw/master/DataFiction.user.js
 // @downloadURL  https://github.com/ReluctusB/DataFiction.net/raw/master/DataFiction.user.js
-// ==UserScript==
+// ==/UserScript==
 
 function settingSetup() {
     for(let i = 0; i < setList.length; i++) {

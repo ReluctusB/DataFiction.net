@@ -1,14 +1,11 @@
 // ==UserScript==
 // @name         DataFiction_settings-manager
-// @namespace    http://tampermonkey.net/
+// @namespace    https://github.com/ReluctusB
 // @version      0.1
 // @description  Manages settings for DataFiction.net
 // @author       RB
 // @match        https://www.fimfiction.net/manage/local-settings
 // @grant        none
-// @run-at       document-end
-// @updateURL    https://github.com/ReluctusB/DataFiction.net/raw/master/settings_manager.core.js
-// @downloadURL  https://github.com/ReluctusB/DataFiction.net/raw/master/settings_manager.core.js
 // ==/UserScript==
 
 const setList = ["datafic-VV","datafic-FF"];

@@ -7,6 +7,8 @@
 // @match        https://www.fimfiction.net/*
 // @grant        none
 // @run-at       document-end
+// @updateURL    https://github.com/ReluctusB/DataFiction.net/raw/master/view_vote.core.js
+// @downloadURL  https://github.com/ReluctusB/DataFiction.net/raw/master/view_vote.core.js
 // ==/UserScript==
 
 function kConvert(inStr) {

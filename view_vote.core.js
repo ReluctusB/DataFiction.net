@@ -1,14 +1,11 @@
 // ==UserScript==
 // @name         Vote/View Display
-// @namespace    http://tampermonkey.net/
+// @namespace    https://github.com/ReluctusB
 // @version      0.1
 // @description  Displays percentage of readers who have upvoted a story on that story's card. Highlights green if over 10%.
 // @author       RB
 // @match        https://www.fimfiction.net/*
 // @grant        none
-// @run-at       document-end
-// @updateURL    https://github.com/ReluctusB/DataFiction.net/raw/master/view_vote.core.js
-// @downloadURL  https://github.com/ReluctusB/DataFiction.net/raw/master/view_vote.core.js
 // ==/UserScript==
 
 function kConvert(inStr) {

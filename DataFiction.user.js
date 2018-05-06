@@ -14,6 +14,7 @@
 // @downloadURL  https://github.com/ReluctusB/DataFiction.net/raw/master/DataFiction.user.js
 // ==/UserScript==
 
+const setList = ["datafic-VV","datafic-FF"];
 function settingSetup() {
     for(let i = 0; i < setList.length; i++) {
         if (localStorage.getItem(setList[i]) === null) {

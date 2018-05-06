@@ -10,10 +10,17 @@
 // @require      https://github.com/ReluctusB/DataFiction.net/raw/master/fic_follower.core.js
 // @require      https://github.com/ReluctusB/DataFiction.net/raw/master/view_vote.core.js
 // @require      https://github.com/ReluctusB/DataFiction.net/raw/master/settings_manager.user.js
-// @require      https://github.com/ReluctusB/DataFiction.net/raw/master/settings.core.js
 // @updateURL    https://github.com/ReluctusB/DataFiction.net/raw/master/DataFiction.user.js
 // @downloadURL  https://github.com/ReluctusB/DataFiction.net/raw/master/DataFiction.user.js
 // ==/UserScript==
+
+function settingSetup() {
+    for(let i = 0; i < setList.length; i++) {
+        if (localStorage.getItem(setList[i]) === null) {
+            localStorage.setItem(setList[i],"true");
+        }
+    }
+}
 
 if (localStorage.getItem("datafic-initialized") !== "true") {
     settingSetup();

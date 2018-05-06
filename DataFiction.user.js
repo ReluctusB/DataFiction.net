@@ -31,6 +31,6 @@ if (localStorage.getItem("datafic-VV") === "true") {
     viewVote();
 }
 
-if (localStorage.getItem("datafic-VV") === "true") {
+if (localStorage.getItem("datafic-FF") === "true" && !window.location.href.includes("manage")) {
     ficFollow();
 }

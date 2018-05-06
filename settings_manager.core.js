@@ -43,7 +43,6 @@ function applySetting(setting) {
         localStorage.setItem(setting,"false");
     } else {
         localStorage.setItem(setting,"true");
-    console.log(localStorage.getItem(setting));
     }
 }
 

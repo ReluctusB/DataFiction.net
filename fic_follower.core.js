@@ -5,8 +5,11 @@
 // @description  Displays an author's follower/fic ratio
 // @author       RB
 // @match        https://www.fimfiction.net/*
+// @exclude      https://www.fimfiction.net/manage/*
 // @grant        none
 // @run-at       document-end
+// @updateURL    https://github.com/ReluctusB/DataFiction.net/raw/master/fic_follower.core.js
+// @downloadURL  https://github.com/ReluctusB/DataFiction.net/raw/master/fic_follower.core.js
 // ==/UserScript==
 
 function cardFicFollow() {

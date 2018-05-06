@@ -22,6 +22,7 @@ function kConvert(inStr) {
 function viewVote() {
     var bars = document.querySelectorAll(".rating-bar, div.featured_story>.info");
     var ups, views, ratio, appendEle, prec, outSpan, appBefore, fragment, fragBefore, approx, parentClasses;
+    var barGreen = localStorage.getItem("stylesheet") === "dark" ? "#72ce72" : "#75a83f";
     for (let i=0;i<bars.length;i++) {
         parentClasses = bars[i].parentNode.classList;
         fragment = new DocumentFragment();
@@ -67,7 +68,7 @@ function viewVote() {
             outSpan = document.createElement("SPAN");
             outSpan.appendChild(document.createTextNode(approx + ratio + "%"));
             if (ratio >= 10) {
-                outSpan.style.color = "#72ce72";
+                outSpan.style.color = barGreen;
             }
         }
         fragment.insertBefore(outSpan,fragBefore);

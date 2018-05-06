@@ -9,5 +9,5 @@
 // @run-at       document-end
 // @require      https://github.com/ReluctusB/DataFiction.net/raw/master/fic_follower.core.js
 // @require      https://github.com/ReluctusB/DataFiction.net/raw/master/view_vote.core.js
-// @require      https://github.com/ReluctusB/DataFiction.net/raw/master/setting_manager.core.js
+// @require      https://github.com/ReluctusB/DataFiction.net/raw/master/settings_manager.core.js
 // ==/UserScript==

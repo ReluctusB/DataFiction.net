@@ -9,5 +9,21 @@
 // @run-at       document-end
 // @require      https://github.com/ReluctusB/DataFiction.net/raw/master/fic_follower.core.js
 // @require      https://github.com/ReluctusB/DataFiction.net/raw/master/view_vote.core.js
-// @require      https://github.com/ReluctusB/DataFiction.net/raw/master/settings_manager.core.js
+// @require      https://github.com/ReluctusB/DataFiction.net/raw/master/settings_manager.user.js
+// @require      https://github.com/ReluctusB/DataFiction.net/raw/master/settings.core.js
+// @updateURL    https://github.com/ReluctusB/DataFiction.net/raw/master/DataFiction.user.js
+// @downloadURL  https://github.com/ReluctusB/DataFiction.net/raw/master/DataFiction.user.js
 // ==/UserScript==
+
+if (localStorage.getItem("datafic-initialized") !== "true") {
+    settingSetup();
+    localStorage.setItem("datafic-initialized", "true");
+}
+
+if (localStorage.getItem("datafic-VV") === "true") {
+    viewVote();
+}
+
+if (localStorage.getItem("datafic-VV") === "true") {
+    ficFollow();
+}

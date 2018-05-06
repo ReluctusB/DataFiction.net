@@ -59,7 +59,7 @@ function viewVote() {
             fragBefore = fragment.firstChild;
         }
         ratio = ((ups/views)*100).toFixed(2);
-        if (isNaN(ratio)) {
+        if (isNaN(ratio) || !isFinite(ratio)) {
             continue;
         } else {
             outSpan = document.createElement("SPAN");

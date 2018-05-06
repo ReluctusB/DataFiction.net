@@ -11,6 +11,8 @@
 // @downloadURL  https://github.com/ReluctusB/DataFiction.net/raw/master/settings_manager.core.js
 // ==/UserScript==
 
+const setList = ["datafic-VV","datafic-FF"];
+
 function row(label, setting) {
     this.element = document.createElement("TR");
     let lab = document.createElement("TD");

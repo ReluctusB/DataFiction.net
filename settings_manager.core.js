@@ -50,17 +50,19 @@ function applySetting(setting) {
     }
 }
 
-var fragment = new DocumentFragment();
-var dataSettingsRowHeader = document.createElement("tr");
-dataSettingsRowHeader.className = "section_header";
-dataSettingsRowHeader.innerHTML = "<td colspan='2'><b>DataFiction.net Settings</b></td>";
+function setUpManager() {
+    var fragment = new DocumentFragment();
+    var dataSettingsRowHeader = document.createElement("tr");
+    dataSettingsRowHeader.className = "section_header";
+    dataSettingsRowHeader.innerHTML = "<td colspan='2'><b>DataFiction.net Settings</b></td>";
 
-var dataSettingsVV = new row("Display Views/Vote", "datafic-VV");
-var dataSettingsFF = new row("Display Followers/Fic","datafic-FF");
+    var dataSettingsVV = new row("Display Views/Vote", "datafic-VV");
+    var dataSettingsFF = new row("Display Followers/Fic","datafic-FF");
 
-fragment.appendChild(dataSettingsRowHeader);
-fragment.appendChild(dataSettingsVV);
-fragment.appendChild(dataSettingsFF);
+    fragment.appendChild(dataSettingsRowHeader);
+    fragment.appendChild(dataSettingsVV);
+    fragment.appendChild(dataSettingsFF);
 
-document.querySelector("table.properties > tbody").appendChild(fragment);
-settingDisplay();
+    document.querySelector("table.properties > tbody").appendChild(fragment);
+    settingDisplay();
+}

@@ -199,6 +199,7 @@ function verify(inVal, ele) {
     let outVal = parseInt(inVal);
     if (isNaN(outVal)) {
         ele.style.backgroundColor = "#b97e6e";
+	return null;
     } else {
         ele.style.backgroundColor = "";
         return outVal;

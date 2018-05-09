@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DataFiction
 // @namespace    https://github.com/ReluctusB
-// @version      1.0
+// @version      1.1
 // @description  DataFiction.net is a set of userscripts that provides useful (and more esoteric) information to users of Fimfiction.net at a glance.
 // @author       RB
 // @match        https://www.fimfiction.net/*

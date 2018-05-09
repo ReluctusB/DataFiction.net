@@ -114,8 +114,42 @@ function viewVote() {
     }
 }
 
+//Reading Time
+function timeConvert(inMinutes) {
+    if (inMinutes >= 525600) {
+        return (inMinutes/525600).toFixed(2) + " years";
+    } else if (inMinutes >= 10080) {
+        return (inMinutes/10080).toFixed(2) + " weeks";
+    } else if (inMinutes >= 1440) {
+        return (inMinutes/1440).toFixed(2) + " days";
+    } else if (inMinutes >= 60) {
+        return (inMinutes/60).toFixed(2) + " hours";
+    } else {
+        return inMinutes.toFixed(2) + " minutes";
+    }
+}
+
+function readingTime() {
+    const userWMP = localStorage.getItem("datafic-WPM");
+    let wordCount = document.querySelectorAll(".word_count > b");
+    if (wordCount.length !== 0) {
+        let sheet = document.head.appendChild(document.createElement("style")).sheet;
+        sheet.insertRule('.word_count {text-align:right; width:25%}',sheet.cssRules.length);
+        for (let i=0;i<wordCount.length;i++) {
+            let storyWCount = parseInt(wordCount[i].textContent.replace(/,/g,""));
+            wordCount[i].parentNode.innerHTML += " ·&nbsp;" + timeConvert(storyWCount/userWMP);
+        }
+    }
+    let wordCountList = document.querySelector("div.content_box i.fa-font + b");
+    if (wordCountList !== null) {
+        let queryWordCount = parseInt(wordCountList.nextSibling.textContent.replace(/,/g,""));
+        document.querySelector("div.content_box > span,div.content_box > p > span").title = "Based on your average reading speed of " + userWMP + " wpm";
+        document.querySelector("div.content_box i.fa-clock-o + b").nextSibling.textContent = " " + timeConvert(queryWordCount/userWMP);
+    }
+}
+
 //Settings Manager
-const setList = ["datafic-VV","datafic-FF"];
+const setList = ["datafic-VV","datafic-FF","datafic-RT"];
 
 function row(label, setting) {
     this.element = document.createElement("TR");
@@ -123,6 +157,7 @@ function row(label, setting) {
     lab.className = "label";
     lab.appendChild(document.createTextNode(label));
     this.element.appendChild(lab);
+
     let opt = document.createElement("TD");
     let optLabel = document.createElement("LABEL");
     optLabel.className = "toggleable-switch";
@@ -132,9 +167,17 @@ function row(label, setting) {
     optLabel.appendChild(optBox);
     optLabel.appendChild(document.createElement("A"));
     opt.appendChild(optLabel);
-    optBox.addEventListener("change",function(){applySetting(setting);});
+    optBox.addEventListener("change",function(){toggleSetting(setting);});
     this.element.appendChild(opt);
     return this.element;
+}
+
+function settingSetup() {
+    for(let i = 0; i < setList.length; i++) {
+        if (localStorage.getItem(setList[i]) === null) {
+            localStorage.setItem(setList[i],"true");
+        }
+    }
 }
 
 function settingDisplay() {
@@ -145,11 +188,22 @@ function settingDisplay() {
     }
 }
 
-function applySetting(setting) {
+function toggleSetting(setting) {
     if (localStorage.getItem(setting) === "true"){
         localStorage.setItem(setting,"false");
     } else {
         localStorage.setItem(setting,"true");
+    console.log(localStorage.getItem(setting));
+    }
+}
+
+function verify(inVal, ele) {
+    let outVal = parseInt(inVal);
+    if (isNaN(outVal)) {
+        ele.style.backgroundColor = "#b97e6e";
+    } else {
+        ele.style.backgroundColor = "";
+        return outVal;
     }
 }
 
@@ -158,15 +212,22 @@ function setUpManager() {
     var dataSettingsRowHeader = document.createElement("tr");
     dataSettingsRowHeader.className = "section_header";
     dataSettingsRowHeader.innerHTML = "<td colspan='2'><b>DataFiction.net Settings</b></td>";
-
-    var dataSettingsVV = new row("Display Views/Vote", "datafic-VV");
-    var dataSettingsFF = new row("Display Followers/Fic","datafic-FF");
-
+    var dataSettingsVV = new row("Views/Vote", "datafic-VV");
+    var dataSettingsFF = new row("Followers/Fic","datafic-FF");
+    var dataSettingsRT = new row("Personalized Reading Time","datafic-RT");
+    var WPMInput = document.createElement("INPUT");
+    WPMInput.type = "text";
+    WPMInput.value = localStorage.getItem("datafic-WPM")?localStorage.getItem("datafic-WPM"):250;
+    WPMInput.addEventListener("change", function(){localStorage.setItem("datafic-WPM",verify(this.value,this));});
+    WPMInput.style.marginTop = "1rem";
+    dataSettingsRT.lastChild.firstChild.appendChild(document.createTextNode("Your reading speed, in words per minute:"));
+    dataSettingsRT.lastChild.appendChild(WPMInput);
     fragment.appendChild(dataSettingsRowHeader);
     fragment.appendChild(dataSettingsVV);
     fragment.appendChild(dataSettingsFF);
-
+    fragment.appendChild(dataSettingsRT);
     document.querySelector("table.properties > tbody").appendChild(fragment);
+    document.getElementById("datafic-RT").addEventListener("change",function(){localStorage.setItem("datafic-WPM",WPMInput.value);});
     settingDisplay();
 }
 
@@ -190,6 +251,10 @@ if (localStorage.getItem("datafic-VV") === "true") {
 
 if (localStorage.getItem("datafic-FF") === "true" && !window.location.href.includes("manage")) {
     ficFollow();
+}
+
+if (localStorage.getItem("datafic-RT") === "true") {
+    readingTime();
 }
 
 if (window.location.href.includes("manage/local-settings")) {

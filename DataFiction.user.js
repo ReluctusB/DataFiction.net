@@ -157,7 +157,6 @@ function row(label, setting) {
     lab.className = "label";
     lab.appendChild(document.createTextNode(label));
     this.element.appendChild(lab);
-
     let opt = document.createElement("TD");
     let optLabel = document.createElement("LABEL");
     optLabel.className = "toggleable-switch";
@@ -193,7 +192,6 @@ function toggleSetting(setting) {
         localStorage.setItem(setting,"false");
     } else {
         localStorage.setItem(setting,"true");
-    console.log(localStorage.getItem(setting));
     }
 }
 

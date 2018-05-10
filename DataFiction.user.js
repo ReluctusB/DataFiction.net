@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DataFiction
 // @namespace    https://github.com/ReluctusB
-// @version      1.1
+// @version      1.1.1
 // @description  DataFiction.net is a set of userscripts that provides useful (and more esoteric) information to users of Fimfiction.net at a glance.
 // @author       RB
 // @match        https://www.fimfiction.net/*
@@ -50,11 +50,11 @@ function ficFollow() {
 
 //View/Vote
 function kConvert(inStr) {
-	if (!inStr.includes("k")) {
-		return parseInt(inStr);
-	} else {
-		return parseFloat(inStr)*1000;
-	}
+    if (!inStr.includes("k")) {
+	return parseInt(inStr);
+    } else {
+	return parseFloat(inStr)*1000;
+    }
 }
 
 function viewVote() {
@@ -156,6 +156,11 @@ function row(label, setting) {
     let lab = document.createElement("TD");
     lab.className = "label";
     lab.appendChild(document.createTextNode(label));
+    let infoLink = document.createElement("A");
+    infoLink.href = "https://github.com/ReluctusB/DataFiction.net/blob/Dev-compiled/features.md#"+label.toLowerCase().replace(/\//g,"").replace(/ /g,"-");
+    infoLink.target="_blank";
+    infoLink.innerHTML = " <i class='fa fa-question-circle'></i>";
+    lab.appendChild(infoLink);
     this.element.appendChild(lab);
     let opt = document.createElement("TD");
     let optLabel = document.createElement("LABEL");
@@ -213,7 +218,7 @@ function setUpManager() {
     dataSettingsRowHeader.innerHTML = "<td colspan='2'><b>DataFiction.net Settings</b></td>";
     var dataSettingsVV = new row("Views/Vote", "datafic-VV");
     var dataSettingsFF = new row("Followers/Fic","datafic-FF");
-    var dataSettingsRT = new row("Personalized Reading Time","datafic-RT");
+    var dataSettingsRT = new row("Personalized Reading Times","datafic-RT");
     var WPMInput = document.createElement("INPUT");
     WPMInput.type = "text";
     WPMInput.value = localStorage.getItem("datafic-WPM")?localStorage.getItem("datafic-WPM"):250;

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DataFiction
 // @namespace    https://github.com/ReluctusB
-// @version      1.1.1
+// @version      1.1.2
 // @description  DataFiction.net is a set of userscripts that provides useful (and more esoteric) information to users of Fimfiction.net at a glance.
 // @author       RB
 // @match        https://www.fimfiction.net/*
@@ -11,7 +11,7 @@
 // @downloadURL  https://github.com/ReluctusB/DataFiction.net/raw/master/DataFiction.user.js
 // ==/UserScript==
 
-//Fic/Follow
+//Follow/Fic
 function cardFicFollow() {
     let cards = document.getElementsByClassName("user-card");
     for (let i=0;i<cards.length;i++) {
@@ -58,9 +58,9 @@ function kConvert(inStr) {
 }
 
 function viewVote() {
-    var bars = document.querySelectorAll(".rating-bar, div.featured_story>.info");
-    var ups, views, ratio, appendEle, prec, outSpan, appBefore, fragment, fragBefore, approx, parentClasses;
-    var barGreen = localStorage.getItem("stylesheet") === "dark" ? "#72ce72" : "#75a83f";
+    let bars = document.querySelectorAll(".rating-bar, div.featured_story>.info");
+    let ups, views, ratio, appendEle, prec, outSpan, appBefore, fragment, fragBefore, approx, parentClasses;
+    let barGreen = localStorage.getItem("stylesheet") === "dark" ? "#72ce72" : "#75a83f";
     for (let i=0;i<bars.length;i++) {
         parentClasses = bars[i].parentNode.classList;
         fragment = new DocumentFragment();
@@ -87,7 +87,7 @@ function viewVote() {
             prec = document.createElement("B");
             prec.appendChild(document.createTextNode("· "));
             fragment.appendChild(prec);
-        } else if (parentClasses.contains("rating_container")) {
+        } else if (parentClasses.contains("rating_container") && !document.querySelector(".chapter_content_box")) {
             ups = kConvert(bars[i].previousSibling.textContent.replace(",",""));
             views = parseInt(bars[i].parentNode.querySelector("[title~='views']").title.replace(",",""));
             appendEle = bars[i].parentNode;
@@ -149,7 +149,6 @@ function readingTime() {
 }
 
 //Settings Manager
-const setList = ["datafic-VV","datafic-FF","datafic-RT"];
 
 function row(label, setting) {
     this.element = document.createElement("TR");
@@ -176,28 +175,21 @@ function row(label, setting) {
     return this.element;
 }
 
-function settingSetup() {
-    for(let i = 0; i < setList.length; i++) {
-        if (localStorage.getItem(setList[i]) === null) {
-            localStorage.setItem(setList[i],"true");
-        }
-    }
-}
-
 function settingDisplay() {
     for(let i = 0; i < setList.length; i++) {
-        if (localStorage.getItem(setList[i]) === "true") {
+        if (datafic_settings[setList[i]] == 1) {
             document.getElementById(setList[i]).checked = true;
         }
     }
 }
 
 function toggleSetting(setting) {
-    if (localStorage.getItem(setting) === "true"){
-        localStorage.setItem(setting,"false");
+    if (datafic_settings[setting] == 0){
+        datafic_settings[setting] = 1;
     } else {
-        localStorage.setItem(setting,"true");
+        datafic_settings[setting] = 0;
     }
+    localStorage["datafic-settings"] = JSON.stringify(datafic_settings);
 }
 
 function verify(inVal, ele) {
@@ -235,32 +227,39 @@ function setUpManager() {
     settingDisplay();
 }
 
-//Main
 function settingSetup() {
-    for(let i = 0; i < setList.length; i++) {
-        if (localStorage.getItem(setList[i]) === null) {
-            localStorage.setItem(setList[i],"true");
+    let settings = {};
+    if (localStorage["datafic-settings"]) {
+        settings = JSON.parse(localStorage["datafic-settings"]);
+        for(let i = 0; i < setList.length; i++) {
+            if (!settings[setList[i]]) {
+                settings[setList[i]] = 1;
+            }
         }
+    } else {
+        settings = {"datafic-VV":1,"datafic-FF":1,"datafic-RT":0};
     }
+    localStorage["datafic-settings"] = JSON.stringify(settings);
 }
 
-if (localStorage.getItem("datafic-initialized") !== "true") {
+//Main
+const version = GM_info.script.version;
+const setList = ["datafic-VV","datafic-FF","datafic-RT"];
+
+if (localStorage.getItem("datafic-version") !== version || !localStorage["datafic-settings"]) {
     settingSetup();
-    localStorage.setItem("datafic-initialized", "true");
+    localStorage.setItem("datafic-version", version);
 }
-
-if (localStorage.getItem("datafic-VV") === "true") {
+var datafic_settings = JSON.parse(localStorage["datafic-settings"]);
+if (datafic_settings["datafic-VV"] == 1) {
     viewVote();
 }
-
-if (localStorage.getItem("datafic-FF") === "true" && !window.location.href.includes("manage")) {
+if (datafic_settings["datafic-FF"] == 1 && !window.location.href.includes("manage")) {
     ficFollow();
 }
-
-if (localStorage.getItem("datafic-RT") === "true") {
+if (datafic_settings["datafic-RT"] == 1) {
     readingTime();
 }
-
 if (window.location.href.includes("manage/local-settings")) {
     setUpManager();
 }

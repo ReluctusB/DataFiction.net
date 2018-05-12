@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DataFiction
 // @namespace    https://github.com/ReluctusB
-// @version      1.1.2
+// @version      1.1.3
 // @description  DataFiction.net is a set of userscripts that provides useful (and more esoteric) information to users of Fimfiction.net at a glance.
 // @author       RB
 // @match        https://www.fimfiction.net/*
@@ -11,13 +11,23 @@
 // @downloadURL  https://github.com/ReluctusB/DataFiction.net/raw/master/DataFiction.user.js
 // ==/UserScript==
 
+//General Functions
+function kConvert(inStr) {
+    inStr = inStr.replace(/,/g,"");
+    if (!inStr.includes("k")) {
+	return parseInt(inStr);
+    } else {
+	return parseFloat(inStr)*1000;
+    }
+}
+
 //Follow/Fic
 function cardFicFollow() {
     let cards = document.getElementsByClassName("user-card");
     for (let i=0;i<cards.length;i++) {
         let links = cards[i].getElementsByClassName("user-links")[0];
-        let fics = parseInt(links.childNodes[0].firstChild.textContent.replace(",",""));
-        let followers = parseInt(links.childNodes[2].firstChild.textContent.replace(",",""));
+        let fics = kConvert(links.childNodes[0].firstChild.textContent);
+        let followers = kConvert(links.childNodes[2].firstChild.textContent);
         let ratio = (followers/fics).toFixed(1);
         if (!isNaN(ratio) && isFinite(ratio)) {
             links.childNodes[2].firstChild.innerHTML = followers + " (" + ratio + ")";
@@ -28,8 +38,8 @@ function cardFicFollow() {
 
 function ficFollow() {
     if (document.getElementsByClassName("tabs")[0]) {
-        let fics = parseInt(document.querySelector(".tab-stories span.number").textContent.replace(",",""));
-        let followers = parseInt(document.querySelector(".tab-followers span.number").textContent.replace(",",""));
+        let fics = kConvert(document.querySelector(".tab-stories span.number").textContent);
+        let followers = kConvert(document.querySelector(".tab-followers span.number").textContent);
         let ratio = (followers/fics).toFixed(2);
         if (!isNaN(ratio) && isFinite(ratio)) {
             let info = document.querySelector("li.tab-following");
@@ -38,7 +48,7 @@ function ficFollow() {
             info.parentNode.insertBefore(newTab, info);
         }
     }
-    var authorLinks = document.querySelectorAll("a[href*='/user/']");
+    let authorLinks = document.querySelectorAll("a[href*='/user/']");
     //Starting at 11 gets us past the links in the header - RB
     for (let i=11;i<authorLinks.length;i++) {
         authorLinks[i].addEventListener("mouseover",function(){
@@ -48,25 +58,18 @@ function ficFollow() {
     cardFicFollow();
 }
 
-//View/Vote
-function kConvert(inStr) {
-    if (!inStr.includes("k")) {
-	return parseInt(inStr);
-    } else {
-	return parseFloat(inStr)*1000;
-    }
-}
-
-function viewVote() {
+//Votes/Views
+function voteViews() {
     let bars = document.querySelectorAll(".rating-bar, div.featured_story>.info");
     let ups, views, ratio, appendEle, prec, outSpan, appBefore, fragment, fragBefore, approx, parentClasses;
     let barGreen = localStorage.getItem("stylesheet") === "dark" ? "#72ce72" : "#75a83f";
+    let threshold = localStorage.getItem("datafic-VVT")?parseInt(localStorage.getItem("datafic-VVT")):10;
     for (let i=0;i<bars.length;i++) {
         parentClasses = bars[i].parentNode.classList;
         fragment = new DocumentFragment();
         approx = "";
         if (parentClasses.contains("story-card__info")) {
-            ups = kConvert(bars[i].previousSibling.textContent.replace(",",""));
+            ups = kConvert(bars[i].previousSibling.textContent);
             views = kConvert(bars[i].parentNode.childNodes[14].textContent.replace("views",""));
             if (bars[i].parentNode.childNodes[14].textContent.includes("k")) {
                 approx = "~";
@@ -77,7 +80,7 @@ function viewVote() {
             prec.appendChild(document.createTextNode("· "));
             fragment.appendChild(prec);
         } else if (parentClasses.contains("featured_story")) {
-            ups = kConvert(bars[i].childNodes[9].textContent.replace(",",""));
+            ups = kConvert(bars[i].childNodes[9].textContent);
             views = kConvert(bars[i].childNodes[5].textContent.replace("views",""));
             if (bars[i].childNodes[5].textContent.includes("k")) {
                 approx = "~";
@@ -88,13 +91,12 @@ function viewVote() {
             prec.appendChild(document.createTextNode("· "));
             fragment.appendChild(prec);
         } else if (parentClasses.contains("rating_container") && !document.querySelector(".chapter_content_box")) {
-            ups = kConvert(bars[i].previousSibling.textContent.replace(",",""));
-            views = parseInt(bars[i].parentNode.querySelector("[title~='views']").title.replace(",",""));
+            ups = kConvert(bars[i].previousSibling.textContent);
+            views = kConvert(bars[i].parentNode.querySelector("[title~='views']").title);
             appendEle = bars[i].parentNode;
             appBefore = bars[i].parentNode.querySelector("[title~='comments']");
             prec = document.createElement("DIV");
             prec.className = "divider";
-            fragment = new DocumentFragment();
             fragment.appendChild(prec);
             fragment.appendChild(prec);
             fragBefore = fragment.firstChild;
@@ -105,7 +107,7 @@ function viewVote() {
         } else {
             outSpan = document.createElement("SPAN");
             outSpan.appendChild(document.createTextNode(approx + ratio + "%"));
-            if (ratio >= 10) {
+            if (ratio >= threshold) {
                 outSpan.style.color = barGreen;
             }
         }
@@ -130,19 +132,19 @@ function timeConvert(inMinutes) {
 }
 
 function readingTime() {
-    const userWMP = localStorage.getItem("datafic-WPM");
+    const userWMP = parseInt(localStorage.getItem("datafic-WPM"));
     let wordCount = document.querySelectorAll(".word_count > b");
     if (wordCount.length !== 0) {
         let sheet = document.head.appendChild(document.createElement("style")).sheet;
         sheet.insertRule('.word_count {text-align:right; width:25%}',sheet.cssRules.length);
         for (let i=0;i<wordCount.length;i++) {
-            let storyWCount = parseInt(wordCount[i].textContent.replace(/,/g,""));
+            let storyWCount = kConvert(wordCount[i].textContent);
             wordCount[i].parentNode.innerHTML += " ·&nbsp;" + timeConvert(storyWCount/userWMP);
         }
     }
     let wordCountList = document.querySelector("div.content_box i.fa-font + b");
     if (wordCountList !== null) {
-        let queryWordCount = parseInt(wordCountList.nextSibling.textContent.replace(/,/g,""));
+        let queryWordCount = kConvert(wordCountList.nextSibling.textContent);
         document.querySelector("div.content_box > span,div.content_box > p > span").title = "Based on your average reading speed of " + userWMP + " wpm";
         document.querySelector("div.content_box i.fa-clock-o + b").nextSibling.textContent = " " + timeConvert(queryWordCount/userWMP);
     }
@@ -175,6 +177,15 @@ function row(label, setting) {
     return this.element;
 }
 
+function textIn(localVar, defaultVar) {
+    this.element = document.createElement("INPUT");
+    this.element.type = "text";
+    this.element.value = localStorage.getItem(localVar)?localStorage.getItem(localVar):defaultVar;
+    this.element.addEventListener("change", function(){localStorage.setItem(localVar,verify(this.value,this));});
+    this.element.style.marginTop = "1rem";
+    return this.element;
+}
+
 function settingDisplay() {
     for(let i = 0; i < setList.length; i++) {
         if (datafic_settings[setList[i]] == 1) {
@@ -193,29 +204,29 @@ function toggleSetting(setting) {
 }
 
 function verify(inVal, ele) {
-    let outVal = parseInt(inVal);
-    if (isNaN(outVal)) {
+    ele.style.color = "black";
+    if (isNaN(parseInt(inVal))) {
         ele.style.backgroundColor = "#b97e6e";
-	return null;
+        return null;
     } else {
         ele.style.backgroundColor = "";
-        return outVal;
+        ele.style.backgroundColor = "#86b75c";
+        return inVal;
     }
 }
 
 function setUpManager() {
-    var fragment = new DocumentFragment();
-    var dataSettingsRowHeader = document.createElement("tr");
+    let fragment = new DocumentFragment();
+    let dataSettingsRowHeader = document.createElement("tr");
     dataSettingsRowHeader.className = "section_header";
     dataSettingsRowHeader.innerHTML = "<td colspan='2'><b>DataFiction.net Settings</b></td>";
-    var dataSettingsVV = new row("Views/Vote", "datafic-VV");
-    var dataSettingsFF = new row("Followers/Fic","datafic-FF");
-    var dataSettingsRT = new row("Personalized Reading Times","datafic-RT");
-    var WPMInput = document.createElement("INPUT");
-    WPMInput.type = "text";
-    WPMInput.value = localStorage.getItem("datafic-WPM")?localStorage.getItem("datafic-WPM"):250;
-    WPMInput.addEventListener("change", function(){localStorage.setItem("datafic-WPM",verify(this.value,this));});
-    WPMInput.style.marginTop = "1rem";
+    let dataSettingsVV = new row("Votes/Views Percentage", "datafic-VV");
+    let VVTInput = new textIn("datafic-VVT", 10);
+    dataSettingsVV.lastChild.firstChild.appendChild(document.createTextNode("Highlight percentages above: (make blank to disable)"));
+    dataSettingsVV.lastChild.appendChild(VVTInput);
+    let dataSettingsFF = new row("Followers/Fic Ratio","datafic-FF");
+    let dataSettingsRT = new row("Personalized Reading Times","datafic-RT");
+    let WPMInput = new textIn("datafic-WPM", 250);
     dataSettingsRT.lastChild.firstChild.appendChild(document.createTextNode("Your reading speed, in words per minute:"));
     dataSettingsRT.lastChild.appendChild(WPMInput);
     fragment.appendChild(dataSettingsRowHeader);
@@ -252,7 +263,7 @@ if (localStorage.getItem("datafic-version") !== version || !localStorage["datafi
 }
 var datafic_settings = JSON.parse(localStorage["datafic-settings"]);
 if (datafic_settings["datafic-VV"] == 1) {
-    viewVote();
+    voteViews();
 }
 if (datafic_settings["datafic-FF"] == 1 && !window.location.href.includes("manage")) {
     ficFollow();

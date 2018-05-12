@@ -12,7 +12,7 @@ DataFiction.net is a set of userscripts that provides useful (and esoteric) info
 - Personalized reading time estimates on story pages, bookshelves, and search queries
 - Custom settings on the Local Settings page allow you to choose what information you see or don't see
 
-### Planned Features
+### Planned Features:
 - More customization options—choose what displays where and how
 - More pieces of information to display
   - Intuitive last chapter post date/dead story indicator

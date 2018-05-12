@@ -1,5 +1,5 @@
 # DataFiction.net
-DataFiction.net is a set of userscripts that provides useful (and esoteric) information to users of Fimfiction.net at a glance. (Currently a stable work-in-progress.)
+DataFiction.net is a robust userscript that provides useful (and esoteric) information to users of Fimfiction.net at a glance. (Currently a stable work-in-progress.)
 
 **[Install!](https://github.com/ReluctusB/DataFiction.net/raw/master/DataFiction.user.js)
 (Requires a userscript manager, such as Tampermonkey or Violentmonkey)**

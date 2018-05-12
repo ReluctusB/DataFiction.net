@@ -209,7 +209,6 @@ function verify(inVal, ele) {
         ele.style.backgroundColor = "#b97e6e";
         return null;
     } else {
-        ele.style.backgroundColor = "";
         ele.style.backgroundColor = "#86b75c";
         return inVal;
     }

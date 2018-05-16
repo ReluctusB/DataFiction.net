@@ -10,11 +10,10 @@ DataFiction.net is a robust userscript that provides useful (and esoteric) infor
   - Highlights green when over user-specified threshold (defaults to 10%)
 - Displays an author's followers/fic ratio on the author's page and card
 - Personalized reading time estimates on story pages, bookshelves, and search queries
+- Displays average chapter post frequency, estimated date of next chapter, and time since last chapter on a story's page
 - Custom settings on the Local Settings page allow you to choose what information you see or don't see
 
 ### Planned Features:
 - More customization options—choose what displays where and how
 - More pieces of information to display
-  - Intuitive last chapter post date/dead story indicator
-  - Average post frequency/estimated next chapter post date on stories
   - Average story chapter length

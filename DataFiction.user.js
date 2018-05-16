@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DataFiction
 // @namespace    https://github.com/ReluctusB
-// @version      1.1.3
+// @version      1.2.0
 // @description  DataFiction.net is a set of userscripts that provides useful (and more esoteric) information to users of Fimfiction.net at a glance.
 // @author       RB
 // @match        https://www.fimfiction.net/*
@@ -18,6 +18,20 @@ function kConvert(inStr) {
 	return parseInt(inStr);
     } else {
 	return parseFloat(inStr)*1000;
+    }
+}
+
+function timeConvert(inMinutes) {
+    if (inMinutes >= 525600) {
+        return (inMinutes/525600).toFixed(2) + " years";
+    } else if (inMinutes >= 10080) {
+        return (inMinutes/10080).toFixed(2) + " weeks";
+    } else if (inMinutes >= 1440) {
+        return (inMinutes/1440).toFixed(2) + " days";
+    } else if (inMinutes >= 60) {
+        return (inMinutes/60).toFixed(2) + " hours";
+    } else {
+        return inMinutes.toFixed(2) + " minutes";
     }
 }
 
@@ -117,20 +131,6 @@ function voteViews() {
 }
 
 //Reading Time
-function timeConvert(inMinutes) {
-    if (inMinutes >= 525600) {
-        return (inMinutes/525600).toFixed(2) + " years";
-    } else if (inMinutes >= 10080) {
-        return (inMinutes/10080).toFixed(2) + " weeks";
-    } else if (inMinutes >= 1440) {
-        return (inMinutes/1440).toFixed(2) + " days";
-    } else if (inMinutes >= 60) {
-        return (inMinutes/60).toFixed(2) + " hours";
-    } else {
-        return inMinutes.toFixed(2) + " minutes";
-    }
-}
-
 function readingTime() {
     const userWMP = parseInt(localStorage.getItem("datafic-WPM"));
     let wordCount = document.querySelectorAll(".word_count > b");
@@ -150,8 +150,44 @@ function readingTime() {
     }
 }
 
-//Settings Manager
+//Average Chapter Post Rate
+function averagePost() {
+    let chapterLists = document.querySelectorAll("ul.chapters");
+    for (let i=0;i<chapterLists.length;i++) {
+        let chapters = chapterLists[i].getElementsByClassName("title-box");
+        let footer = chapterLists[i].nextSibling.nextSibling;
+        if (true && footer.getElementsByTagName("SPAN")[0].title.match(/(Incomplete|Hiatus)/g)) {
+            let postDates = [];
+            for (let i=0;i<chapters.length;i++) {
+                if (!chapters[i].getElementsByClassName("date")[0]) {continue;}
+                postDates.push(Date.parse(chapters[i].getElementsByClassName("date")[0].childNodes[1].textContent.replace(/(th|nd|rd|st|)/g,"")));
+            }
+            let diffSum = 0;
+            for (let i=postDates.length-1;i>0;i--) {
+                if (!postDates[i-1]) {break;}
+                diffSum += Math.abs(postDates[i] - postDates[i-1]);
+            }
+            let lastUpdate = postDates[postDates.length - 1];
+            let fragment = new DocumentFragment();
+            fragment.appendChild(document.createElement("BR"));
+            if (diffSum > 0 && footer.getElementsByTagName("SPAN")[0].title !== "On Hiatus") {
+                let postSpan = document.createElement("SPAN");
+                postSpan.className = "approved-date";
+                postSpan.innerText = "Updates on average every " + timeConvert((diffSum/postDates.length)/60000);
+                let expectedUpdate = new Date(lastUpdate + diffSum/postDates.length);
+                postSpan.title = "Expected to update on " + expectedUpdate.toDateString();
+                fragment.appendChild(postSpan);
+            }
+            let lastSpan = document.createElement("SPAN");
+            lastSpan.className = "approved-date";
+            lastSpan.innerText = "Last update: " + timeConvert((Date.now() - lastUpdate)/60000) + " ago";
+            fragment.appendChild(lastSpan);
+            footer.append(fragment);
+        }
+    }
+}
 
+//Settings Manager
 function row(label, setting) {
     this.element = document.createElement("TR");
     let lab = document.createElement("TD");
@@ -228,10 +264,12 @@ function setUpManager() {
     let WPMInput = new textIn("datafic-WPM", 250);
     dataSettingsRT.lastChild.firstChild.appendChild(document.createTextNode("Your reading speed, in words per minute:"));
     dataSettingsRT.lastChild.appendChild(WPMInput);
+    let dataSettingsAP = new row("Average Post Schedule","datafic-AP");
     fragment.appendChild(dataSettingsRowHeader);
     fragment.appendChild(dataSettingsVV);
     fragment.appendChild(dataSettingsFF);
     fragment.appendChild(dataSettingsRT);
+    fragment.appendChild(dataSettingsAP);
     document.querySelector("table.properties > tbody").appendChild(fragment);
     document.getElementById("datafic-RT").addEventListener("change",function(){localStorage.setItem("datafic-WPM",WPMInput.value);});
     settingDisplay();
@@ -254,7 +292,7 @@ function settingSetup() {
 
 //Main
 const version = GM_info.script.version;
-const setList = ["datafic-VV","datafic-FF","datafic-RT"];
+const setList = ["datafic-VV","datafic-FF","datafic-RT","datafic-AP"];
 
 if (localStorage.getItem("datafic-version") !== version || !localStorage["datafic-settings"]) {
     settingSetup();
@@ -269,6 +307,9 @@ if (datafic_settings["datafic-FF"] == 1 && !window.location.href.includes("manag
 }
 if (datafic_settings["datafic-RT"] == 1) {
     readingTime();
+}
+if (datafic_settings["datafic-AP"] == 1) {
+    averagePost();
 }
 if (window.location.href.includes("manage/local-settings")) {
     setUpManager();

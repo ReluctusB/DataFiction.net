@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DataFiction
 // @namespace    https://github.com/ReluctusB
-// @version      1.2.0
+// @version      1.2.2
 // @description  DataFiction.net is a set of userscripts that provides useful (and more esoteric) information to users of Fimfiction.net at a glance.
 // @author       RB
 // @match        https://www.fimfiction.net/*
@@ -60,6 +60,14 @@ function ficFollow() {
             let newTab = document.createElement("LI");
             newTab.innerHTML = "<a><span class='number'>"+ratio+"</span> Follow/Fic</a>";
             info.parentNode.insertBefore(newTab, info);
+            let newDropdownItem = document.createElement("LI");
+            let newDropdownDivider = document.createElement("LI");
+            newDropdownItem.innerHTML = "<a><i class='fa fa-fw fa-eye'></i> Follow/Fic: "+ratio+"</a>";
+            newDropdownDivider.className = "divider";
+            let dropdown = document.querySelector(".mobile-header .drop-down > ul");
+            dropdown.style.overflow = "hidden";
+            dropdown.appendChild(newDropdownDivider);
+            dropdown.appendChild(newDropdownItem);
         }
     }
     let authorLinks = document.querySelectorAll("a[href*='/user/']");
@@ -190,13 +198,14 @@ function averagePost() {
 //Settings Manager
 function row(label, setting) {
     this.element = document.createElement("TR");
+    this.element.style.gridTemplateColumns = "35% 65%";
     let lab = document.createElement("TD");
     lab.className = "label";
-    lab.appendChild(document.createTextNode(label));
+    lab.appendChild(document.createTextNode(label + " "));
     let infoLink = document.createElement("A");
     infoLink.href = "https://github.com/ReluctusB/DataFiction.net/blob/Dev-compiled/features.md#"+label.toLowerCase().replace(/\//g,"").replace(/ /g,"-");
     infoLink.target="_blank";
-    infoLink.innerHTML = " <i class='fa fa-question-circle'></i>";
+    infoLink.innerHTML = "<i class='fa fa-question-circle'></i>";
     lab.appendChild(infoLink);
     this.element.appendChild(lab);
     let opt = document.createElement("TD");
@@ -257,12 +266,12 @@ function setUpManager() {
     dataSettingsRowHeader.innerHTML = "<td colspan='2'><b>DataFiction.net Settings</b></td>";
     let dataSettingsVV = new row("Votes/Views Percentage", "datafic-VV");
     let VVTInput = new textIn("datafic-VVT", 10);
-    dataSettingsVV.lastChild.firstChild.appendChild(document.createTextNode("Highlight percentages above: (make blank to disable)"));
+    dataSettingsVV.lastChild.appendChild(document.createTextNode("Highlight percentages above: (make blank to disable)"));
     dataSettingsVV.lastChild.appendChild(VVTInput);
     let dataSettingsFF = new row("Followers/Fic Ratio","datafic-FF");
     let dataSettingsRT = new row("Personalized Reading Times","datafic-RT");
     let WPMInput = new textIn("datafic-WPM", 250);
-    dataSettingsRT.lastChild.firstChild.appendChild(document.createTextNode("Your reading speed, in words per minute:"));
+    dataSettingsRT.lastChild.appendChild(document.createTextNode("Your reading speed, in words per minute:"));
     dataSettingsRT.lastChild.appendChild(WPMInput);
     let dataSettingsAP = new row("Average Post Schedule","datafic-AP");
     fragment.appendChild(dataSettingsRowHeader);
@@ -285,7 +294,7 @@ function settingSetup() {
             }
         }
     } else {
-        settings = {"datafic-VV":1,"datafic-FF":1,"datafic-RT":0};
+        settings = {"datafic-VV":1,"datafic-FF":1,"datafic-RT":0,"datafic-AP":1};
     }
     localStorage["datafic-settings"] = JSON.stringify(settings);
 }

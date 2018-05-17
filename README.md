@@ -1,5 +1,5 @@
 # DataFiction.net
-DataFiction.net is a robust userscript that provides useful (and esoteric) information to users of Fimfiction.net at a glance. (Currently a stable work-in-progress.)
+DataFiction.net is a robust userscript that provides useful (and esoteric) information to users of Fimfiction.net at a glance.
 
 **[Install!](https://github.com/ReluctusB/DataFiction.net/raw/master/DataFiction.user.js)
 (Requires a userscript manager, such as Tampermonkey or Violentmonkey)**
@@ -13,7 +13,3 @@ DataFiction.net is a robust userscript that provides useful (and esoteric) infor
 - Displays average chapter post frequency, estimated date of next chapter, and time since last chapter on a story's page
 - Custom settings on the Local Settings page allow you to choose what information you see or don't see
 
-### Planned Features:
-- More customization options—choose what displays where and how
-- More pieces of information to display
-  - Average story chapter length

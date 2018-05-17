@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DataFiction
 // @namespace    https://github.com/ReluctusB
-// @version      1.2.1
+// @version      1.2.2
 // @description  DataFiction.net is a set of userscripts that provides useful (and more esoteric) information to users of Fimfiction.net at a glance.
 // @author       RB
 // @match        https://www.fimfiction.net/*
@@ -60,6 +60,14 @@ function ficFollow() {
             let newTab = document.createElement("LI");
             newTab.innerHTML = "<a><span class='number'>"+ratio+"</span> Follow/Fic</a>";
             info.parentNode.insertBefore(newTab, info);
+            let newDropdownItem = document.createElement("LI");
+            let newDropdownDivider = document.createElement("LI");
+            newDropdownItem.innerHTML = "<a><i class='fa fa-fw fa-eye'></i> Follow/Fic: "+ratio+"</a>";
+            newDropdownDivider.className = "divider";
+            let dropdown = document.querySelector(".mobile-header .drop-down > ul");
+            dropdown.style.overflow = "hidden";
+            dropdown.appendChild(newDropdownDivider);
+            dropdown.appendChild(newDropdownItem);
         }
     }
     let authorLinks = document.querySelectorAll("a[href*='/user/']");

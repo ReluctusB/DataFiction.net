@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DataFiction
 // @namespace    https://github.com/ReluctusB
-// @version      1.2.3
+// @version      1.2.4
 // @description  DataFiction.net is a set of userscripts that provides useful (and more esoteric) information to users of Fimfiction.net at a glance.
 // @author       RB
 // @match        https://www.fimfiction.net/*
@@ -81,7 +81,7 @@ function voteViews() {
     let bars = document.querySelectorAll(".rating-bar, div.featured_story>.info");
     let ups, views, ratio, appendEle, prec, outSpan, appBefore, fragment, fragBefore, approx, parentClasses;
     let barGreen = localStorage.getItem("stylesheet") === "dark" ? "#72ce72" : "#75a83f";
-    const threshold = localStorage.getItem("datafic-VVT")?parseInt(localStorage.getItem("datafic-VVT")):10;
+    const threshold = datafic_settings["datafic-VVT"]?datafic_settings["datafic-VVT"]:10;
     for (let i=0;i<bars.length;i++) {
         parentClasses = bars[i].parentNode.classList;
         fragment = new DocumentFragment();
@@ -132,7 +132,7 @@ function voteViews() {
 
 //Reading Time
 function readingTime() {
-    const userWMP = localStorage.getItem("datafic-WPM")?parseInt(localStorage.getItem("datafic-WPM")):250;
+    const userWMP = datafic_settings["datafic-WPM"]?datafic_settings["datafic-WPM"]:250;
     let wordCount = document.querySelectorAll(".word_count > b");
     if (wordCount.length !== 0) {
         let sheet = document.head.appendChild(document.createElement("style")).sheet;
@@ -221,9 +221,9 @@ function toggleIn(localVar) {
 function textIn(localVar, defaultVar) {
     this.element = document.createElement("INPUT");
     this.element.type = "text";
-    this.element.value = localStorage.getItem(localVar)?localStorage.getItem(localVar):defaultVar;
-    this.element.addEventListener("change", function(){localStorage.setItem(localVar,verify(this.value,this));});
-    //this.element.style.marginTop = "1rem";
+    this.element.value = datafic_settings[localVar]?datafic_settings[localVar]:defaultVar;
+    this.element.addEventListener("change", function(){datafic_settings[localVar] = verify(this.value,this);
+    localStorage["datafic-settings"] = JSON.stringify(datafic_settings);});
     return this.element;
 }
 
@@ -240,7 +240,8 @@ function toggleSetting(setting) {
 
 function verify(inVal, ele) {
     ele.style.color = "black";
-    if (isNaN(parseInt(inVal))) {
+    inVal = parseInt(inVal);
+    if (isNaN(inVal)) {
         ele.style.backgroundColor = "#b97e6e";
         return null;
     } else {

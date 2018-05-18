@@ -223,7 +223,7 @@ function textIn(localVar, defaultVar) {
     this.element.type = "text";
     this.element.value = localStorage.getItem(localVar)?localStorage.getItem(localVar):defaultVar;
     this.element.addEventListener("change", function(){localStorage.setItem(localVar,verify(this.value,this));});
-    this.element.style.marginTop = "1rem";
+    //this.element.style.marginTop = "1rem";
     return this.element;
 }
 
@@ -256,11 +256,13 @@ function setUpManager() {
     dataSettingsRowHeader.innerHTML = "<td colspan='2'><b>DataFiction.net Settings</b></td>";
     fragment.appendChild(dataSettingsRowHeader);
     let dataSettingsVV = new row("Votes/Views Percentage", "datafic-VV");
+    dataSettingsVV.lastChild.appendChild(document.createElement("BR"));
     dataSettingsVV.lastChild.appendChild(document.createTextNode("Highlight percentages above: (make blank to disable)"));
     dataSettingsVV.lastChild.appendChild(new textIn("datafic-VVT", 10));
     fragment.appendChild(dataSettingsVV);
     fragment.appendChild(new row("Followers/Fic Ratio","datafic-FF"));
     let dataSettingsRT = new row("Personalized Reading Times","datafic-RT");
+    dataSettingsRT.lastChild.appendChild(document.createElement("BR"));
     dataSettingsRT.lastChild.appendChild(document.createTextNode("Your reading speed, in words per minute:"));
     dataSettingsRT.lastChild.appendChild(new textIn("datafic-WPM", 250));
     fragment.appendChild(dataSettingsRT);

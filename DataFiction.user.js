@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DataFiction
 // @namespace    https://github.com/ReluctusB
-// @version      1.2.4
+// @version      1.2.5
 // @description  DataFiction.net is a set of userscripts that provides useful (and more esoteric) information to users of Fimfiction.net at a glance.
 // @author       RB
 // @match        https://www.fimfiction.net/*
@@ -18,17 +18,11 @@ function kConvert(inStr) {
 }
 
 function timeConvert(inMinutes) {
-    if (inMinutes >= 525600) {
-        return (inMinutes/525600).toFixed(2) + " years";
-    } else if (inMinutes >= 10080) {
-        return (inMinutes/10080).toFixed(2) + " weeks";
-    } else if (inMinutes >= 1440) {
-        return (inMinutes/1440).toFixed(2) + " days";
-    } else if (inMinutes >= 60) {
-        return (inMinutes/60).toFixed(2) + " hours";
-    } else {
-        return inMinutes.toFixed(2) + " minutes";
-    }
+    return inMinutes >= 525600 ? (inMinutes/525600).toFixed(2) + " years"
+        : inMinutes >= 10080 ? (inMinutes/10080).toFixed(2) + " weeks"
+        : inMinutes >= 1440 ? (inMinutes/1440).toFixed(2) + " days"
+        : inMinutes >= 60 ? (inMinutes/60).toFixed(2) + " hours"
+        : inMinutes.toFixed(2) + " minutes";
 }
 
 //Follow/Fic
@@ -69,9 +63,7 @@ function ficFollow() {
     let authorLinks = document.querySelectorAll("a[href*='/user/']");
     //Starting at 11 gets us past the links in the header - RB
     for (let i=11;i<authorLinks.length;i++) {
-        authorLinks[i].addEventListener("mouseover",function(){
-            setTimeout(cardFicFollow,500);
-        });
+        authorLinks[i].addEventListener("mouseover",function(){setTimeout(cardFicFollow,500);});
     }
     cardFicFollow();
 }
@@ -138,15 +130,13 @@ function readingTime() {
         let sheet = document.head.appendChild(document.createElement("style")).sheet;
         sheet.insertRule('.word_count {text-align:right; width:25%}',sheet.cssRules.length);
         for (let i=0;i<wordCount.length;i++) {
-            let storyWCount = kConvert(wordCount[i].textContent);
-            wordCount[i].parentNode.innerHTML += " ·&nbsp;" + timeConvert(storyWCount/userWMP);
+            wordCount[i].parentNode.innerHTML += " ·&nbsp;" + timeConvert(kConvert(wordCount[i].textContent)/userWMP);
         }
     }
     let wordCountList = document.querySelector("div.content_box i.fa-font + b");
     if (wordCountList !== null) {
-        let queryWordCount = kConvert(wordCountList.nextSibling.textContent);
         document.querySelector("div.content_box > span,div.content_box > p > span").title = "Based on your average reading speed of " + userWMP + " wpm";
-        document.querySelector("div.content_box i.fa-clock-o + b").nextSibling.textContent = " " + timeConvert(queryWordCount/userWMP);
+        document.querySelector("div.content_box i.fa-clock-o + b").nextSibling.textContent = " " + timeConvert(kConvert(wordCountList.nextSibling.textContent)/userWMP);
     }
 }
 
@@ -175,12 +165,14 @@ function averagePost() {
                 postSpan.className = "approved-date";
                 postSpan.innerText = "Updates on average every " + timeConvert((diffSum/postDates.length)/60000);
                 let expectedUpdate = new Date(lastUpdate + diffSum/postDates.length);
-                postSpan.title = "Expected to update on " + expectedUpdate.toDateString();
+                let timeTo = (expectedUpdate - Date.now())/60000;
+                postSpan.title = "Expected to update on " + expectedUpdate.toDateString() + (timeTo > 0?" (" + timeConvert(timeTo) + ")":"");
                 fragment.appendChild(postSpan);
             }
+            let lastUp = (Date.now() - lastUpdate)/60000;
             let lastSpan = document.createElement("SPAN");
             lastSpan.className = "approved-date";
-            lastSpan.innerText = "Last update: " + timeConvert((Date.now() - lastUpdate)/60000) + " ago";
+            lastSpan.innerText = "Last update: " + (lastUp > 1440?timeConvert(lastUp) + " ago":"today");
             fragment.appendChild(lastSpan);
             footer.append(fragment);
         }
@@ -241,13 +233,7 @@ function toggleSetting(setting) {
 function verify(inVal, ele) {
     ele.style.color = "black";
     inVal = parseInt(inVal);
-    if (isNaN(inVal)) {
-        ele.style.backgroundColor = "#b97e6e";
-        return null;
-    } else {
-        ele.style.backgroundColor = "#86b75c";
-        return inVal;
-    }
+    return isNaN(inVal)?(ele.style.backgroundColor = "#b97e6e",null):(ele.style.backgroundColor = "#86b75c",inVal);
 }
 
 function setUpManager() {

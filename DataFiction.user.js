@@ -107,9 +107,7 @@ function voteViews() {
         ratio = ((ups/views)*100).toFixed(2);
         if (!isNaN(ratio) && isFinite(ratio)) {
             outSpan = eleBuilder("SPAN", {text:approx + ratio + "%"});
-            if (ratio >= threshold) {
-                outSpan.style.color = barGreen;
-            }
+            if (ratio >= threshold) {outSpan.style.color = barGreen;}
             fragment.insertBefore(outSpan,fragBefore);
             appendEle.insertBefore(fragment,appBefore);
         }
@@ -149,9 +147,7 @@ function averagePost() {
             }
             let diffSum = 0;
             for (let i=postDates.length-1;i>0;i--) {
-                if (postDates[i-1]) {
-                    diffSum += Math.abs(postDates[i] - postDates[i-1]);
-                }
+                if (postDates[i-1]) {diffSum += Math.abs(postDates[i] - postDates[i-1]);}
             }
             let lastUpdate = postDates[postDates.length - 1];
             let fragment = new DocumentFragment();
@@ -250,9 +246,7 @@ function settingSetup() {
     if (localStorage["datafic-settings"]) {
         settings = JSON.parse(localStorage["datafic-settings"]);
         for(let i = 0; i < setList.length; i++) {
-            if (!settings[setList[i]]) {
-                settings[setList[i]] = 0;
-            }
+            if (!settings[setList[i]]) {settings[setList[i]] = 0;}
         }
     } else {
         settings = {"datafic-VV":1,"datafic-FF":1,"datafic-RT":0,"datafic-AP":1};
@@ -269,18 +263,8 @@ if (localStorage.getItem("datafic-version") !== version || !localStorage["datafi
     localStorage.setItem("datafic-version", version);
 }
 var datafic_settings = JSON.parse(localStorage["datafic-settings"]);
-if (datafic_settings["datafic-VV"] === 1) {
-    voteViews();
-}
-if (datafic_settings["datafic-FF"] === 1 && !window.location.href.includes("manage")) {
-    ficFollow();
-}
-if (datafic_settings["datafic-RT"] === 1) {
-    readingTime();
-}
-if (datafic_settings["datafic-AP"] === 1) {
-    averagePost();
-}
-if (window.location.href.includes("manage/local-settings")) {
-    setUpManager();
-}
+if (datafic_settings["datafic-VV"] === 1) {voteViews();}
+if (datafic_settings["datafic-FF"] === 1 && !window.location.href.includes("manage")) {ficFollow();}
+if (datafic_settings["datafic-RT"] === 1) {readingTime();}
+if (datafic_settings["datafic-AP"] === 1) {averagePost();}
+if (window.location.href.includes("manage/local-settings")) {setUpManager();}

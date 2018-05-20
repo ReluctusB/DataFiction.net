@@ -26,7 +26,7 @@ function timeConvert(inMinutes) {
 }
 
 function eleBuilder(eleStr, propObj) {
-    let ele = document.createElement(eleStr);
+    const ele = document.createElement(eleStr);
     if (propObj.class) {ele.className = propObj.class;}
     if (propObj.HTML) {ele.innerHTML = propObj.HTML;}
     if (propObj.text) {ele.innerText = propObj.text;}
@@ -37,10 +37,10 @@ function eleBuilder(eleStr, propObj) {
 
 //Follow/Fic
 function cardFicFollow(card) {
-    let links = card.getElementsByClassName("user-links")[0];
-    let fics = kConvert(links.childNodes[0].firstChild.textContent);
-    let followers = kConvert(links.childNodes[2].firstChild.textContent);
-    let ratio = (followers/fics).toFixed(1);
+    const links = card.getElementsByClassName("user-links")[0];
+    const fics = kConvert(links.childNodes[0].firstChild.textContent);
+    const followers = kConvert(links.childNodes[2].firstChild.textContent);
+    const ratio = (followers/fics).toFixed(1);
     if (!isNaN(ratio) && isFinite(ratio)) {
         links.childNodes[2].firstChild.innerText = followers + " (" + ratio + ")";
         card.getElementsByClassName("sub-info")[0].innerHTML = "<b>"+followers+"</b> followers · <b>"+fics+"</b> stories · <b>"+ratio+"</b> f/f ratio";
@@ -49,27 +49,27 @@ function cardFicFollow(card) {
 
 function ficFollow() {
     if (document.getElementsByClassName("tabs")[0]) {
-        let fics = kConvert(document.querySelector(".tab-stories span.number").textContent);
-        let followers = kConvert(document.querySelector(".tab-followers span.number").textContent);
-        let ratio = (followers/fics).toFixed(2);
+        const fics = kConvert(document.querySelector(".tab-stories span.number").textContent);
+        const followers = kConvert(document.querySelector(".tab-followers span.number").textContent);
+        const ratio = (followers/fics).toFixed(2);
         if (!isNaN(ratio) && isFinite(ratio)) {
-            let info = document.getElementsByClassName("tab-following")[0];
+            const info = document.getElementsByClassName("tab-following")[0];
             info.parentNode.insertBefore(eleBuilder("LI", {HTML:"<a><span class='number'>"+ratio+"</span> Follow/Fic</a>"}), info);
-            let dropdown = document.querySelector(".mobile-header .drop-down > ul");
+            const dropdown = document.querySelector(".mobile-header .drop-down > ul");
             dropdown.style.overflow = "hidden";
             dropdown.appendChild(eleBuilder("LI", {class:"divider"}));
             dropdown.appendChild(eleBuilder("LI", {HTML:"<a><i class='fa fa-fw fa-eye'></i> Follow/Fic: "+ratio+"</a>"}));
         }
     }
-    let authorLinks = document.querySelectorAll("a[href*='/user/']");
+    const authorLinks = document.querySelectorAll("a[href*='/user/']");
     //Starting at 11 gets us past the links in the header - RB
     for (let i=11;i<authorLinks.length;i++) {
         authorLinks[i].addEventListener("mouseover",() => setTimeout(() => {
-            let curCards = document.getElementsByClassName("user-card");
+            const curCards = document.getElementsByClassName("user-card");
             cardFicFollow(curCards[curCards.length-1]);
         },400));
     }
-    let cards = document.getElementsByClassName("user-card");
+    const cards = document.getElementsByClassName("user-card");
     for (let i=0;i<cards.length;i++) {
         cardFicFollow(cards[i]);
     }
@@ -77,10 +77,10 @@ function ficFollow() {
 
 //Votes/Views
 function voteViews() {
-    let bars = document.querySelectorAll(".rating-bar, div.featured_story>.info");
-    let ups, views, ratio, appendEle, outSpan, appBefore, fragment, fragBefore, approx, parentClasses;
-    let barGreen = localStorage.getItem("stylesheet") === "dark" ? "#72ce72" : "#75a83f";
+    const bars = document.querySelectorAll(".rating-bar, div.featured_story>.info");
     const threshold = datafic_settings["datafic-VVT"]?datafic_settings["datafic-VVT"]:10;
+    const barGreen = localStorage.getItem("stylesheet") === "dark" ? "#72ce72" : "#75a83f";
+    let ups, views, ratio, appendEle, outSpan, appBefore, fragment, fragBefore, approx, parentClasses;
     for (let i=0;i<bars.length;i++) {
         parentClasses = bars[i].parentNode.classList;
         fragment = new DocumentFragment();
@@ -120,10 +120,9 @@ function voteViews() {
 //Reading Time
 function readingTime() {
     const userWMP = datafic_settings["datafic-WPM"]?datafic_settings["datafic-WPM"]:250;
-    let wordCount = document.querySelectorAll(".word_count > b");
+    const wordCount = document.querySelectorAll(".word_count > b");
     if (wordCount.length !== 0) {
-        let sheet = document.head.appendChild(document.createElement("style")).sheet;
-        sheet.insertRule('.word_count {text-align:right; width:25%}',sheet.cssRules.length);
+        document.head.appendChild(eleBuilder("STYLE",{text:".word_count {text-align:right; width:25%}"}));
         for (let i=0;i<wordCount.length;i++) {
             wordCount[i].parentNode.insertAdjacentHTML('beforeend'," ·&nbsp;" + timeConvert(kConvert(wordCount[i].textContent)/userWMP));
         }
@@ -137,10 +136,10 @@ function readingTime() {
 
 //Average Chapter Post Rate
 function averagePost() {
-    let chapterLists = document.querySelectorAll("ul.chapters");
+    const chapterLists = document.querySelectorAll("ul.chapters");
     for (let i=0;i<chapterLists.length;i++) {
-        let chapters = chapterLists[i].getElementsByClassName("title-box");
-        let footer = chapterLists[i].nextSibling.nextSibling;
+        const chapters = chapterLists[i].getElementsByClassName("title-box");
+        const footer = chapterLists[i].nextSibling.nextSibling;
         if (footer.getElementsByTagName("SPAN")[0].title.match(/(Incomplete|Hiatus)/g)|| datafic_settings["datafic-APD"] === 1) {
             let postDates = [];
             for (let i=0;i<chapters.length;i++) {
@@ -152,17 +151,17 @@ function averagePost() {
             for (let i=postDates.length-1;i>0;i--) {
                 if (postDates[i-1]) {diffSum += Math.abs(postDates[i] - postDates[i-1]);}
             }
-            let lastUpdate = postDates[postDates.length - 1];
-            let fragment = new DocumentFragment();
+            const lastUpdate = postDates[postDates.length - 1];
+            const fragment = new DocumentFragment();
             fragment.appendChild(document.createElement("BR"));
             if (diffSum > 0 && (footer.getElementsByTagName("SPAN")[0].title !== "On Hiatus" || datafic_settings["datafic-APD"] === 1)) {
-                let postSpan = eleBuilder("SPAN", {class:"approved-date",text:"Updates on average every " + timeConvert((diffSum/postDates.length)/60000)});
-                let expectedUpdate = new Date(lastUpdate + diffSum/postDates.length);
-                let timeTo = (expectedUpdate - Date.now())/60000;
+                const postSpan = eleBuilder("SPAN", {class:"approved-date",text:"Updates on average every " + timeConvert((diffSum/postDates.length)/60000)});
+                const expectedUpdate = new Date(lastUpdate + diffSum/postDates.length);
+                const timeTo = (expectedUpdate - Date.now())/60000;
                 postSpan.title = "Expected to update on " + expectedUpdate.toDateString() + (timeTo > 0?" (" + timeConvert(timeTo) + ")":"");
                 fragment.appendChild(postSpan);
             }
-            let lastUp = (Date.now() - lastUpdate)/60000;
+            const lastUp = (Date.now() - lastUpdate)/60000;
             fragment.appendChild(eleBuilder("SPAN", {class:"approved-date",text:"Last update: " + (lastUp > 1440?timeConvert(lastUp) + " ago":"today")}));
             footer.append(fragment);
         }
@@ -173,13 +172,13 @@ function averagePost() {
 function row(label, setting) {
     this.element = document.createElement("TR");
     this.element.style.gridTemplateColumns = "35% 65%";
-    let lab = eleBuilder("TD", {class:"label",text:label + " "});
-    let infoLink = eleBuilder("A", {HTML:"<i class='fa fa-question-circle'></i>"});
+    const lab = eleBuilder("TD", {class:"label",text:label + " "});
+    const infoLink = eleBuilder("A", {HTML:"<i class='fa fa-question-circle'></i>"});
     infoLink.href = "https://github.com/ReluctusB/DataFiction.net/blob/Dev-compiled/features.md#"+label.toLowerCase().replace(/\//g,"").replace(/ /g,"-");
     infoLink.target="_blank";
     lab.appendChild(infoLink);
     this.element.appendChild(lab);
-    let opt = document.createElement("TD");
+    const opt = document.createElement("TD");
     opt.appendChild(toggleIn(setting));
     this.element.appendChild(opt);
     return this.element;
@@ -187,10 +186,10 @@ function row(label, setting) {
 
 function toggleIn(localVar) {
     this.element = eleBuilder("LABEL",{class:"toggleable-switch"});
-    let optBox = eleBuilder("INPUT",{id:localVar, type:"checkbox"});
+    const optBox = eleBuilder("INPUT",{id:localVar, type:"checkbox"});
     this.element.appendChild(optBox);
     this.element.appendChild(document.createElement("A"));
-    optBox.addEventListener("change",function(){toggleSetting(localVar);});
+    optBox.addEventListener("change",() => toggleSetting(localVar));
     return this.element;
 }
 
@@ -204,12 +203,12 @@ function textIn(localVar, defaultVar) {
 
 function settingDisplay() {
     for(let i = 0; i < setList.length; i++) {
-        document.getElementById(setList[i]).checked = datafic_settings[setList[i]] == 1?true:false;
+        document.getElementById(setList[i]).checked = datafic_settings[setList[i]] === 1?true:false;
     }
 }
 
 function toggleSetting(setting) {
-    datafic_settings[setting] = datafic_settings[setting] == 1?0:1;
+    datafic_settings[setting] = datafic_settings[setting] === 1?0:1;
     localStorage["datafic-settings"] = JSON.stringify(datafic_settings);
 }
 
@@ -220,21 +219,21 @@ function verify(inVal, ele) {
 }
 
 function setUpManager() {
-    let fragment = new DocumentFragment();
-    let dataSettingsRowHeader = eleBuilder("TR", {class:"section_header",HTML:"<td colspan='2'><b>DataFiction.net Settings</b></td>"});
+    const fragment = new DocumentFragment();
+    const dataSettingsRowHeader = eleBuilder("TR", {class:"section_header", HTML:"<td colspan='2'><b>DataFiction.net Settings</b></td>"});
     fragment.appendChild(dataSettingsRowHeader);
-    let dataSettingsVV = new row("Votes/Views Percentage", "datafic-VV");
+    const dataSettingsVV = new row("Votes/Views Percentage", "datafic-VV");
     dataSettingsVV.lastChild.appendChild(document.createElement("BR"));
     dataSettingsVV.lastChild.appendChild(document.createTextNode("Highlight percentages above: (make blank to disable)"));
     dataSettingsVV.lastChild.appendChild(new textIn("datafic-VVT", 10));
     fragment.appendChild(dataSettingsVV);
     fragment.appendChild(new row("Followers/Fic Ratio","datafic-FF"));
-    let dataSettingsRT = new row("Personalized Reading Times","datafic-RT");
+    const dataSettingsRT = new row("Personalized Reading Times","datafic-RT");
     dataSettingsRT.lastChild.appendChild(document.createElement("BR"));
     dataSettingsRT.lastChild.appendChild(document.createTextNode("Your reading speed, in words per minute:"));
     dataSettingsRT.lastChild.appendChild(new textIn("datafic-WPM", 250));
     fragment.appendChild(dataSettingsRT);
-    let dataSettingsAP = new row("Average Post Schedule","datafic-AP");
+    const dataSettingsAP = new row("Average Post Schedule","datafic-AP");
     dataSettingsAP.lastChild.appendChild(document.createElement("BR"));
     dataSettingsAP.lastChild.appendChild(new toggleIn("datafic-APD"));
     dataSettingsAP.lastChild.appendChild(document.createTextNode("Display regardless of completion"));
@@ -264,7 +263,9 @@ if (localStorage.getItem("datafic-version") !== version || !localStorage["datafi
     settingSetup();
     localStorage.setItem("datafic-version", version);
 }
+
 var datafic_settings = JSON.parse(localStorage["datafic-settings"]);
+
 if (datafic_settings["datafic-VV"] === 1) {voteViews();}
 if (datafic_settings["datafic-FF"] === 1 && !window.location.href.includes("manage")) {ficFollow();}
 if (datafic_settings["datafic-RT"] === 1) {readingTime();}

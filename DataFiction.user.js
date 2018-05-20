@@ -82,7 +82,7 @@ function voteViews() {
     let ups, views, ratio, appendEle, outSpan, appBefore, fragment, fragBefore, approx, parentClasses;
     for (let i=0;i<bars.length;i++) {
         parentClasses = bars[i].parentNode.classList;
-        fragment = new DocumentFragment();
+        fragment = document.createDocumentFragment();
         if (parentClasses.contains("story-card__info")) {
             ups = kConvert(bars[i].previousSibling.textContent);
             views = kConvert(bars[i].parentNode.childNodes[14].textContent.replace("views",""));
@@ -151,7 +151,7 @@ function averagePost() {
                 if (postDates[i-1]) {diffSum += Math.abs(postDates[i] - postDates[i-1]);}
             }
             const lastUpdate = postDates[postDates.length - 1];
-            const fragment = new DocumentFragment();
+            const fragment = document.createDocumentFragment();
             fragment.appendChild(document.createElement("BR"));
             if (diffSum > 0 && (footer.getElementsByTagName("SPAN")[0].title !== "On Hiatus" || datafic_settings["datafic-APD"] === 1)) {
                 const postSpan = eleBuilder("SPAN", {class:"approved-date",text:"Updates on average every " + timeConvert((diffSum/postDates.length)/60000)});
@@ -162,7 +162,7 @@ function averagePost() {
             }
             const lastUp = (Date.now() - lastUpdate)/60000;
             fragment.appendChild(eleBuilder("SPAN", {class:"approved-date",text:"Last update: " + (lastUp > 1440?timeConvert(lastUp) + " ago":"today")}));
-            footer.append(fragment);
+            footer.appendChild(fragment);
         }
     }
 }
@@ -218,7 +218,7 @@ function verify(inVal, ele) {
 }
 
 function setUpManager() {
-    const fragment = new DocumentFragment();
+    const fragment = document.createDocumentFragment();
     const dataSettingsRowHeader = eleBuilder("TR", {class:"section_header", HTML:"<td colspan='2'><b>DataFiction.net Settings</b></td>"});
     fragment.appendChild(dataSettingsRowHeader);
     const dataSettingsVV = new row("Votes/Views Percentage", "datafic-VV");

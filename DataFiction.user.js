@@ -62,11 +62,10 @@ function ficFollow() {
         }
     }
     const authorLinks = document.querySelectorAll("a[href*='/user/']");
-    //Starting at 11 gets us past the links in the header - RB
-    for (let i=11;i<authorLinks.length;i++) {
+    for (let i=11;i<authorLinks.length;i++) {                                //Starting at 11 gets us past the links in the header - RB
         authorLinks[i].addEventListener("mouseover",() => setTimeout(() => {
             const curCards = document.getElementsByClassName("user-card");
-            cardFicFollow(curCards[curCards.length-1]);
+            try{cardFicFollow(curCards[curCards.length-1]);} catch(e) {}     //fimfic doesn't always load the card generator faster than the user can hover. -RB
         },400));
     }
     const cards = document.getElementsByClassName("user-card");

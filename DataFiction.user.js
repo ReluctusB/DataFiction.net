@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DataFiction
 // @namespace    https://github.com/ReluctusB
-// @version      1.2.5
+// @version      1.2.6
 // @description  DataFiction.net is a set of userscripts that provides useful (and more esoteric) information to users of Fimfiction.net at a glance.
 // @author       RB
 // @match        https://www.fimfiction.net/*
@@ -25,55 +25,61 @@ function timeConvert(inMinutes) {
         : inMinutes.toFixed(2) + " minutes";
 }
 
+function eleBuilder(eleStr, propObj) {
+    const ele = document.createElement(eleStr);
+    if (propObj.class) {ele.className = propObj.class;}
+    if (propObj.HTML) {ele.innerHTML = propObj.HTML;}
+    if (propObj.text) {ele.innerText = propObj.text;}
+    if (propObj.id) {ele.id = propObj.id;}
+    if (propObj.type) {ele.type = propObj.type;}
+    return ele;
+}
+
 //Follow/Fic
-function cardFicFollow() {
-    let cards = document.getElementsByClassName("user-card");
-    for (let i=0;i<cards.length;i++) {
-        let links = cards[i].getElementsByClassName("user-links")[0];
-        let fics = kConvert(links.childNodes[0].firstChild.textContent);
-        let followers = kConvert(links.childNodes[2].firstChild.textContent);
-        let ratio = (followers/fics).toFixed(1);
-        if (!isNaN(ratio) && isFinite(ratio)) {
-            links.childNodes[2].firstChild.innerHTML = followers + " (" + ratio + ")";
-            cards[i].getElementsByClassName("sub-info")[0].innerHTML = "<b>"+followers+"</b> followers · <b>"+fics+"</b> stories · <b>"+ratio+"</b> f/f ratio";
-        }
+function cardFicFollow(card) {
+    const links = card.getElementsByClassName("user-links")[0];
+    const fics = kConvert(links.childNodes[0].firstChild.textContent);
+    const followers = kConvert(links.childNodes[2].firstChild.textContent);
+    const ratio = (followers/fics).toFixed(1);
+    if (!isNaN(ratio) && isFinite(ratio)) {
+        links.childNodes[2].firstChild.innerText = followers + " (" + ratio + ")";
+        card.getElementsByClassName("sub-info")[0].innerHTML = "<b>"+followers+"</b> followers · <b>"+fics+"</b> stories · <b>"+ratio+"</b> f/f ratio";
     }
 }
 
 function ficFollow() {
     if (document.getElementsByClassName("tabs")[0]) {
-        let fics = kConvert(document.querySelector(".tab-stories span.number").textContent);
-        let followers = kConvert(document.querySelector(".tab-followers span.number").textContent);
-        let ratio = (followers/fics).toFixed(2);
+        const fics = kConvert(document.querySelector(".tab-stories span.number").textContent);
+        const followers = kConvert(document.querySelector(".tab-followers span.number").textContent);
+        const ratio = (followers/fics).toFixed(2);
         if (!isNaN(ratio) && isFinite(ratio)) {
-            let info = document.getElementsByClassName("tab-following")[0];
-            let newTab = document.createElement("LI");
-            newTab.innerHTML = "<a><span class='number'>"+ratio+"</span> Follow/Fic</a>";
-            info.parentNode.insertBefore(newTab, info);
-            let newDropdownItem = document.createElement("LI");
-            let newDropdownDivider = document.createElement("LI");
-            newDropdownItem.innerHTML = "<a><i class='fa fa-fw fa-eye'></i> Follow/Fic: "+ratio+"</a>";
-            newDropdownDivider.className = "divider";
-            let dropdown = document.querySelector(".mobile-header .drop-down > ul");
+            const info = document.getElementsByClassName("tab-following")[0];
+            info.parentNode.insertBefore(eleBuilder("LI", {HTML:"<a><span class='number'>"+ratio+"</span> Follow/Fic</a>"}), info);
+            const dropdown = document.querySelector(".mobile-header .drop-down > ul");
             dropdown.style.overflow = "hidden";
-            dropdown.appendChild(newDropdownDivider);
-            dropdown.appendChild(newDropdownItem);
+            dropdown.appendChild(eleBuilder("LI", {class:"divider"}));
+            dropdown.appendChild(eleBuilder("LI", {HTML:"<a><i class='fa fa-fw fa-eye'></i> Follow/Fic: "+ratio+"</a>"}));
         }
     }
-    let authorLinks = document.querySelectorAll("a[href*='/user/']");
-    //Starting at 11 gets us past the links in the header - RB
-    for (let i=11;i<authorLinks.length;i++) {
-        authorLinks[i].addEventListener("mouseover",function(){setTimeout(cardFicFollow,500);});
+    const authorLinks = document.querySelectorAll("a[href*='/user/']");
+    for (let i=11;i<authorLinks.length;i++) {                                //Starting at 11 gets us past the links in the header - RB
+        authorLinks[i].addEventListener("mouseover",() => setTimeout(() => {
+            const curCards = document.getElementsByClassName("user-card");
+            if (curCards.length > 0) {cardFicFollow(curCards[curCards.length-1]);}   //fimfic doesn't always load the card generator faster than the user can hover. -RB
+        },400));
     }
-    cardFicFollow();
+    const cards = document.getElementsByClassName("user-card");
+    for (let i=0;i<cards.length;i++) {
+        cardFicFollow(cards[i]);
+    }
 }
 
 //Votes/Views
 function voteViews() {
-    let bars = document.querySelectorAll(".rating-bar, div.featured_story>.info");
-    let ups, views, ratio, appendEle, prec, outSpan, appBefore, fragment, fragBefore, approx, parentClasses;
-    let barGreen = localStorage.getItem("stylesheet") === "dark" ? "#72ce72" : "#75a83f";
+    const bars = document.querySelectorAll(".rating-bar, div.featured_story>.info");
     const threshold = datafic_settings["datafic-VVT"]?datafic_settings["datafic-VVT"]:10;
+    const barGreen = localStorage.getItem("stylesheet") === "dark" ? "#72ce72" : "#75a83f";
+    let ups, views, ratio, appendEle, outSpan, appBefore, fragment, fragBefore, approx, parentClasses;
     for (let i=0;i<bars.length;i++) {
         parentClasses = bars[i].parentNode.classList;
         fragment = new DocumentFragment();
@@ -83,54 +89,41 @@ function voteViews() {
             approx = bars[i].parentNode.childNodes[14].textContent.includes("k")?"~":"";
             appendEle = bars[i].parentNode;
             appBefore = fragBefore = null;
-            prec = document.createElement("B");
-            prec.appendChild(document.createTextNode("· "));
-            fragment.appendChild(prec);
+            fragment.appendChild(eleBuilder("B", {text:"· "}));
         } else if (parentClasses.contains("featured_story")) {
             ups = kConvert(bars[i].childNodes[9].textContent);
             views = kConvert(bars[i].childNodes[5].textContent.replace("views",""));
             approx = bars[i].childNodes[5].textContent.includes("k")?"~":"";
             appendEle = bars[i];
             appBefore = fragBefore = null;
-            prec = document.createElement("B");
-            prec.appendChild(document.createTextNode("· "));
-            fragment.appendChild(prec);
+            fragment.appendChild(eleBuilder("B", {text:"· "}));
         } else if (parentClasses.contains("rating_container") && !document.querySelector(".chapter_content_box")) {
             ups = kConvert(bars[i].previousSibling.textContent);
             views = kConvert(bars[i].parentNode.querySelector("[title~='views']").title);
             approx = "";
             appendEle = bars[i].parentNode;
             appBefore = bars[i].parentNode.querySelector("[title~='comments']");
-            prec = document.createElement("DIV");
-            prec.className = "divider";
-            fragment.appendChild(prec);
-            fragment.appendChild(prec);
+            fragment.appendChild(eleBuilder("DIV", {class:"divider"}));
             fragBefore = fragment.firstChild;
         }
         ratio = ((ups/views)*100).toFixed(2);
-        if (isNaN(ratio) || !isFinite(ratio)) {
-            continue;
-        } else {
-            outSpan = document.createElement("SPAN");
-            outSpan.appendChild(document.createTextNode(approx + ratio + "%"));
-            if (ratio >= threshold) {
-                outSpan.style.color = barGreen;
-            }
+        if (!isNaN(ratio) && isFinite(ratio)) {
+            outSpan = eleBuilder("SPAN", {text:approx + ratio + "%"});
+            if (ratio >= threshold) {outSpan.style.color = barGreen;}
+            fragment.insertBefore(outSpan,fragBefore);
+            appendEle.insertBefore(fragment,appBefore);
         }
-        fragment.insertBefore(outSpan,fragBefore);
-        appendEle.insertBefore(fragment,appBefore);
     }
 }
 
 //Reading Time
 function readingTime() {
     const userWMP = datafic_settings["datafic-WPM"]?datafic_settings["datafic-WPM"]:250;
-    let wordCount = document.querySelectorAll(".word_count > b");
+    const wordCount = document.querySelectorAll(".word_count > b");
     if (wordCount.length !== 0) {
-        let sheet = document.head.appendChild(document.createElement("style")).sheet;
-        sheet.insertRule('.word_count {text-align:right; width:25%}',sheet.cssRules.length);
+        document.head.appendChild(eleBuilder("STYLE",{text:".word_count {text-align:right; width:25%}"}));
         for (let i=0;i<wordCount.length;i++) {
-            wordCount[i].parentNode.innerHTML += " ·&nbsp;" + timeConvert(kConvert(wordCount[i].textContent)/userWMP);
+            wordCount[i].parentNode.insertAdjacentHTML('beforeend'," ·&nbsp;" + timeConvert(kConvert(wordCount[i].textContent)/userWMP));
         }
     }
     let wordCountList = document.querySelector("div.content_box i.fa-font + b");
@@ -142,38 +135,33 @@ function readingTime() {
 
 //Average Chapter Post Rate
 function averagePost() {
-    let chapterLists = document.querySelectorAll("ul.chapters");
+    const chapterLists = document.querySelectorAll("ul.chapters");
     for (let i=0;i<chapterLists.length;i++) {
-        let chapters = chapterLists[i].getElementsByClassName("title-box");
-        let footer = chapterLists[i].nextSibling.nextSibling;
-        if (true && (footer.getElementsByTagName("SPAN")[0].title.match(/(Incomplete|Hiatus)/g)|| datafic_settings["datafic-APD"] === 1)) {
+        const chapters = chapterLists[i].getElementsByClassName("title-box");
+        const footer = chapterLists[i].nextSibling.nextSibling;
+        if (footer.getElementsByTagName("SPAN")[0].title.match(/(Incomplete|Hiatus)/g)|| datafic_settings["datafic-APD"] === 1) {
             let postDates = [];
             for (let i=0;i<chapters.length;i++) {
-                if (!chapters[i].getElementsByClassName("date")[0]) {continue;}
-                postDates.push(Date.parse(chapters[i].getElementsByClassName("date")[0].childNodes[1].textContent.replace(/(th|nd|rd|st|)/g,"")));
+                if (chapters[i].getElementsByClassName("date")[0]) {
+                    postDates.push(Date.parse(chapters[i].getElementsByClassName("date")[0].childNodes[1].textContent.replace(/(th|nd|rd|st|)/g,"")));
+                }
             }
             let diffSum = 0;
             for (let i=postDates.length-1;i>0;i--) {
-                if (!postDates[i-1]) {break;}
-                diffSum += Math.abs(postDates[i] - postDates[i-1]);
+                if (postDates[i-1]) {diffSum += Math.abs(postDates[i] - postDates[i-1]);}
             }
-            let lastUpdate = postDates[postDates.length - 1];
-            let fragment = new DocumentFragment();
+            const lastUpdate = postDates[postDates.length - 1];
+            const fragment = new DocumentFragment();
             fragment.appendChild(document.createElement("BR"));
             if (diffSum > 0 && (footer.getElementsByTagName("SPAN")[0].title !== "On Hiatus" || datafic_settings["datafic-APD"] === 1)) {
-                let postSpan = document.createElement("SPAN");
-                postSpan.className = "approved-date";
-                postSpan.innerText = "Updates on average every " + timeConvert((diffSum/postDates.length)/60000);
-                let expectedUpdate = new Date(lastUpdate + diffSum/postDates.length);
-                let timeTo = (expectedUpdate - Date.now())/60000;
+                const postSpan = eleBuilder("SPAN", {class:"approved-date",text:"Updates on average every " + timeConvert((diffSum/postDates.length)/60000)});
+                const expectedUpdate = new Date(lastUpdate + diffSum/postDates.length);
+                const timeTo = (expectedUpdate - Date.now())/60000;
                 postSpan.title = "Expected to update on " + expectedUpdate.toDateString() + (timeTo > 0?" (" + timeConvert(timeTo) + ")":"");
                 fragment.appendChild(postSpan);
             }
-            let lastUp = (Date.now() - lastUpdate)/60000;
-            let lastSpan = document.createElement("SPAN");
-            lastSpan.className = "approved-date";
-            lastSpan.innerText = "Last update: " + (lastUp > 1440?timeConvert(lastUp) + " ago":"today");
-            fragment.appendChild(lastSpan);
+            const lastUp = (Date.now() - lastUpdate)/60000;
+            fragment.appendChild(eleBuilder("SPAN", {class:"approved-date",text:"Last update: " + (lastUp > 1440?timeConvert(lastUp) + " ago":"today")}));
             footer.append(fragment);
         }
     }
@@ -183,36 +171,29 @@ function averagePost() {
 function row(label, setting) {
     this.element = document.createElement("TR");
     this.element.style.gridTemplateColumns = "35% 65%";
-    let lab = document.createElement("TD");
-    lab.className = "label";
-    lab.appendChild(document.createTextNode(label + " "));
-    let infoLink = document.createElement("A");
+    const lab = eleBuilder("TD", {class:"label",text:label + " "});
+    const infoLink = eleBuilder("A", {HTML:"<i class='fa fa-question-circle'></i>"});
     infoLink.href = "https://github.com/ReluctusB/DataFiction.net/blob/Dev-compiled/features.md#"+label.toLowerCase().replace(/\//g,"").replace(/ /g,"-");
     infoLink.target="_blank";
-    infoLink.innerHTML = "<i class='fa fa-question-circle'></i>";
     lab.appendChild(infoLink);
     this.element.appendChild(lab);
-    let opt = document.createElement("TD");
+    const opt = document.createElement("TD");
     opt.appendChild(toggleIn(setting));
     this.element.appendChild(opt);
     return this.element;
 }
 
 function toggleIn(localVar) {
-    this.element = document.createElement("LABEL");
-    this.element.className = "toggleable-switch";
-    let optBox = document.createElement("INPUT");
-    optBox.type = "checkbox";
-    optBox.id = localVar;
+    this.element = eleBuilder("LABEL",{class:"toggleable-switch"});
+    const optBox = eleBuilder("INPUT",{id:localVar, type:"checkbox"});
     this.element.appendChild(optBox);
     this.element.appendChild(document.createElement("A"));
-    optBox.addEventListener("change",function(){toggleSetting(localVar);});
+    optBox.addEventListener("change",() => toggleSetting(localVar));
     return this.element;
 }
 
 function textIn(localVar, defaultVar) {
-    this.element = document.createElement("INPUT");
-    this.element.type = "text";
+    this.element = eleBuilder("INPUT",{type:"text"});
     this.element.value = datafic_settings[localVar]?datafic_settings[localVar]:defaultVar;
     this.element.addEventListener("change", function(){datafic_settings[localVar] = verify(this.value,this);
     localStorage["datafic-settings"] = JSON.stringify(datafic_settings);});
@@ -221,12 +202,12 @@ function textIn(localVar, defaultVar) {
 
 function settingDisplay() {
     for(let i = 0; i < setList.length; i++) {
-        document.getElementById(setList[i]).checked = datafic_settings[setList[i]] == 1?true:false;
+        document.getElementById(setList[i]).checked = datafic_settings[setList[i]] === 1?true:false;
     }
 }
 
 function toggleSetting(setting) {
-    datafic_settings[setting] = datafic_settings[setting] == 1?0:1;
+    datafic_settings[setting] = datafic_settings[setting] === 1?0:1;
     localStorage["datafic-settings"] = JSON.stringify(datafic_settings);
 }
 
@@ -237,23 +218,21 @@ function verify(inVal, ele) {
 }
 
 function setUpManager() {
-    let fragment = new DocumentFragment();
-    let dataSettingsRowHeader = document.createElement("tr");
-    dataSettingsRowHeader.className = "section_header";
-    dataSettingsRowHeader.innerHTML = "<td colspan='2'><b>DataFiction.net Settings</b></td>";
+    const fragment = new DocumentFragment();
+    const dataSettingsRowHeader = eleBuilder("TR", {class:"section_header", HTML:"<td colspan='2'><b>DataFiction.net Settings</b></td>"});
     fragment.appendChild(dataSettingsRowHeader);
-    let dataSettingsVV = new row("Votes/Views Percentage", "datafic-VV");
+    const dataSettingsVV = new row("Votes/Views Percentage", "datafic-VV");
     dataSettingsVV.lastChild.appendChild(document.createElement("BR"));
     dataSettingsVV.lastChild.appendChild(document.createTextNode("Highlight percentages above: (make blank to disable)"));
     dataSettingsVV.lastChild.appendChild(new textIn("datafic-VVT", 10));
     fragment.appendChild(dataSettingsVV);
     fragment.appendChild(new row("Followers/Fic Ratio","datafic-FF"));
-    let dataSettingsRT = new row("Personalized Reading Times","datafic-RT");
+    const dataSettingsRT = new row("Personalized Reading Times","datafic-RT");
     dataSettingsRT.lastChild.appendChild(document.createElement("BR"));
     dataSettingsRT.lastChild.appendChild(document.createTextNode("Your reading speed, in words per minute:"));
     dataSettingsRT.lastChild.appendChild(new textIn("datafic-WPM", 250));
     fragment.appendChild(dataSettingsRT);
-    let dataSettingsAP = new row("Average Post Schedule","datafic-AP");
+    const dataSettingsAP = new row("Average Post Schedule","datafic-AP");
     dataSettingsAP.lastChild.appendChild(document.createElement("BR"));
     dataSettingsAP.lastChild.appendChild(new toggleIn("datafic-APD"));
     dataSettingsAP.lastChild.appendChild(document.createTextNode("Display regardless of completion"));
@@ -267,9 +246,7 @@ function settingSetup() {
     if (localStorage["datafic-settings"]) {
         settings = JSON.parse(localStorage["datafic-settings"]);
         for(let i = 0; i < setList.length; i++) {
-            if (!settings[setList[i]]) {
-                settings[setList[i]] = 0;
-            }
+            if (!settings[setList[i]]) {settings[setList[i]] = 0;}
         }
     } else {
         settings = {"datafic-VV":1,"datafic-FF":1,"datafic-RT":0,"datafic-AP":1};
@@ -285,19 +262,11 @@ if (localStorage.getItem("datafic-version") !== version || !localStorage["datafi
     settingSetup();
     localStorage.setItem("datafic-version", version);
 }
+
 var datafic_settings = JSON.parse(localStorage["datafic-settings"]);
-if (datafic_settings["datafic-VV"] === 1) {
-    voteViews();
-}
-if (datafic_settings["datafic-FF"] === 1 && !window.location.href.includes("manage")) {
-    ficFollow();
-}
-if (datafic_settings["datafic-RT"] === 1) {
-    readingTime();
-}
-if (datafic_settings["datafic-AP"] === 1) {
-    averagePost();
-}
-if (window.location.href.includes("manage/local-settings")) {
-    setUpManager();
-}
+
+if (datafic_settings["datafic-VV"] === 1) {voteViews();}
+if (datafic_settings["datafic-FF"] === 1 && !window.location.href.includes("manage")) {ficFollow();}
+if (datafic_settings["datafic-RT"] === 1) {readingTime();}
+if (datafic_settings["datafic-AP"] === 1) {averagePost();}
+if (window.location.href.includes("manage/local-settings")) {setUpManager();}

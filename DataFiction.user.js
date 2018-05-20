@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DataFiction
 // @namespace    https://github.com/ReluctusB
-// @version      1.2.3
+// @version      1.2.5
 // @description  DataFiction.net is a set of userscripts that provides useful (and more esoteric) information to users of Fimfiction.net at a glance.
 // @author       RB
 // @match        https://www.fimfiction.net/*
@@ -18,17 +18,11 @@ function kConvert(inStr) {
 }
 
 function timeConvert(inMinutes) {
-    if (inMinutes >= 525600) {
-        return (inMinutes/525600).toFixed(2) + " years";
-    } else if (inMinutes >= 10080) {
-        return (inMinutes/10080).toFixed(2) + " weeks";
-    } else if (inMinutes >= 1440) {
-        return (inMinutes/1440).toFixed(2) + " days";
-    } else if (inMinutes >= 60) {
-        return (inMinutes/60).toFixed(2) + " hours";
-    } else {
-        return inMinutes.toFixed(2) + " minutes";
-    }
+    return inMinutes >= 525600 ? (inMinutes/525600).toFixed(2) + " years"
+        : inMinutes >= 10080 ? (inMinutes/10080).toFixed(2) + " weeks"
+        : inMinutes >= 1440 ? (inMinutes/1440).toFixed(2) + " days"
+        : inMinutes >= 60 ? (inMinutes/60).toFixed(2) + " hours"
+        : inMinutes.toFixed(2) + " minutes";
 }
 
 //Follow/Fic
@@ -69,9 +63,7 @@ function ficFollow() {
     let authorLinks = document.querySelectorAll("a[href*='/user/']");
     //Starting at 11 gets us past the links in the header - RB
     for (let i=11;i<authorLinks.length;i++) {
-        authorLinks[i].addEventListener("mouseover",function(){
-            setTimeout(cardFicFollow,500);
-        });
+        authorLinks[i].addEventListener("mouseover",function(){setTimeout(cardFicFollow,500);});
     }
     cardFicFollow();
 }
@@ -81,7 +73,7 @@ function voteViews() {
     let bars = document.querySelectorAll(".rating-bar, div.featured_story>.info");
     let ups, views, ratio, appendEle, prec, outSpan, appBefore, fragment, fragBefore, approx, parentClasses;
     let barGreen = localStorage.getItem("stylesheet") === "dark" ? "#72ce72" : "#75a83f";
-    const threshold = localStorage.getItem("datafic-VVT")?parseInt(localStorage.getItem("datafic-VVT")):10;
+    const threshold = datafic_settings["datafic-VVT"]?datafic_settings["datafic-VVT"]:10;
     for (let i=0;i<bars.length;i++) {
         parentClasses = bars[i].parentNode.classList;
         fragment = new DocumentFragment();
@@ -116,37 +108,33 @@ function voteViews() {
             fragBefore = fragment.firstChild;
         }
         ratio = ((ups/views)*100).toFixed(2);
-        if (isNaN(ratio) || !isFinite(ratio)) {
-            continue;
-        } else {
+        if (!isNaN(ratio) && isFinite(ratio)) {
             outSpan = document.createElement("SPAN");
             outSpan.appendChild(document.createTextNode(approx + ratio + "%"));
             if (ratio >= threshold) {
                 outSpan.style.color = barGreen;
             }
+            fragment.insertBefore(outSpan,fragBefore);
+            appendEle.insertBefore(fragment,appBefore);
         }
-        fragment.insertBefore(outSpan,fragBefore);
-        appendEle.insertBefore(fragment,appBefore);
     }
 }
 
 //Reading Time
 function readingTime() {
-    const userWMP = localStorage.getItem("datafic-WPM")?parseInt(localStorage.getItem("datafic-WPM")):250;
+    const userWMP = datafic_settings["datafic-WPM"]?datafic_settings["datafic-WPM"]:250;
     let wordCount = document.querySelectorAll(".word_count > b");
     if (wordCount.length !== 0) {
         let sheet = document.head.appendChild(document.createElement("style")).sheet;
         sheet.insertRule('.word_count {text-align:right; width:25%}',sheet.cssRules.length);
         for (let i=0;i<wordCount.length;i++) {
-            let storyWCount = kConvert(wordCount[i].textContent);
-            wordCount[i].parentNode.innerHTML += " ·&nbsp;" + timeConvert(storyWCount/userWMP);
+            wordCount[i].parentNode.innerHTML += " ·&nbsp;" + timeConvert(kConvert(wordCount[i].textContent)/userWMP);
         }
     }
     let wordCountList = document.querySelector("div.content_box i.fa-font + b");
     if (wordCountList !== null) {
-        let queryWordCount = kConvert(wordCountList.nextSibling.textContent);
         document.querySelector("div.content_box > span,div.content_box > p > span").title = "Based on your average reading speed of " + userWMP + " wpm";
-        document.querySelector("div.content_box i.fa-clock-o + b").nextSibling.textContent = " " + timeConvert(queryWordCount/userWMP);
+        document.querySelector("div.content_box i.fa-clock-o + b").nextSibling.textContent = " " + timeConvert(kConvert(wordCountList.nextSibling.textContent)/userWMP);
     }
 }
 
@@ -156,16 +144,18 @@ function averagePost() {
     for (let i=0;i<chapterLists.length;i++) {
         let chapters = chapterLists[i].getElementsByClassName("title-box");
         let footer = chapterLists[i].nextSibling.nextSibling;
-        if (true && (footer.getElementsByTagName("SPAN")[0].title.match(/(Incomplete|Hiatus)/g)|| datafic_settings["datafic-APD"] === 1)) {
+        if (footer.getElementsByTagName("SPAN")[0].title.match(/(Incomplete|Hiatus)/g)|| datafic_settings["datafic-APD"] === 1) {
             let postDates = [];
             for (let i=0;i<chapters.length;i++) {
-                if (!chapters[i].getElementsByClassName("date")[0]) {continue;}
-                postDates.push(Date.parse(chapters[i].getElementsByClassName("date")[0].childNodes[1].textContent.replace(/(th|nd|rd|st|)/g,"")));
+                if (chapters[i].getElementsByClassName("date")[0]) {
+                    postDates.push(Date.parse(chapters[i].getElementsByClassName("date")[0].childNodes[1].textContent.replace(/(th|nd|rd|st|)/g,"")));
+                }
             }
             let diffSum = 0;
             for (let i=postDates.length-1;i>0;i--) {
-                if (!postDates[i-1]) {break;}
-                diffSum += Math.abs(postDates[i] - postDates[i-1]);
+                if (postDates[i-1]) {
+                    diffSum += Math.abs(postDates[i] - postDates[i-1]);
+                }
             }
             let lastUpdate = postDates[postDates.length - 1];
             let fragment = new DocumentFragment();
@@ -175,12 +165,14 @@ function averagePost() {
                 postSpan.className = "approved-date";
                 postSpan.innerText = "Updates on average every " + timeConvert((diffSum/postDates.length)/60000);
                 let expectedUpdate = new Date(lastUpdate + diffSum/postDates.length);
-                postSpan.title = "Expected to update on " + expectedUpdate.toDateString();
+                let timeTo = (expectedUpdate - Date.now())/60000;
+                postSpan.title = "Expected to update on " + expectedUpdate.toDateString() + (timeTo > 0?" (" + timeConvert(timeTo) + ")":"");
                 fragment.appendChild(postSpan);
             }
+            let lastUp = (Date.now() - lastUpdate)/60000;
             let lastSpan = document.createElement("SPAN");
             lastSpan.className = "approved-date";
-            lastSpan.innerText = "Last update: " + timeConvert((Date.now() - lastUpdate)/60000) + " ago";
+            lastSpan.innerText = "Last update: " + (lastUp > 1440?timeConvert(lastUp) + " ago":"today");
             fragment.appendChild(lastSpan);
             footer.append(fragment);
         }
@@ -221,9 +213,9 @@ function toggleIn(localVar) {
 function textIn(localVar, defaultVar) {
     this.element = document.createElement("INPUT");
     this.element.type = "text";
-    this.element.value = localStorage.getItem(localVar)?localStorage.getItem(localVar):defaultVar;
-    this.element.addEventListener("change", function(){localStorage.setItem(localVar,verify(this.value,this));});
-    this.element.style.marginTop = "1rem";
+    this.element.value = datafic_settings[localVar]?datafic_settings[localVar]:defaultVar;
+    this.element.addEventListener("change", function(){datafic_settings[localVar] = verify(this.value,this);
+    localStorage["datafic-settings"] = JSON.stringify(datafic_settings);});
     return this.element;
 }
 
@@ -240,13 +232,8 @@ function toggleSetting(setting) {
 
 function verify(inVal, ele) {
     ele.style.color = "black";
-    if (isNaN(parseInt(inVal))) {
-        ele.style.backgroundColor = "#b97e6e";
-        return null;
-    } else {
-        ele.style.backgroundColor = "#86b75c";
-        return inVal;
-    }
+    inVal = parseInt(inVal);
+    return isNaN(inVal)?(ele.style.backgroundColor = "#b97e6e",null):(ele.style.backgroundColor = "#86b75c",inVal);
 }
 
 function setUpManager() {
@@ -256,11 +243,13 @@ function setUpManager() {
     dataSettingsRowHeader.innerHTML = "<td colspan='2'><b>DataFiction.net Settings</b></td>";
     fragment.appendChild(dataSettingsRowHeader);
     let dataSettingsVV = new row("Votes/Views Percentage", "datafic-VV");
+    dataSettingsVV.lastChild.appendChild(document.createElement("BR"));
     dataSettingsVV.lastChild.appendChild(document.createTextNode("Highlight percentages above: (make blank to disable)"));
     dataSettingsVV.lastChild.appendChild(new textIn("datafic-VVT", 10));
     fragment.appendChild(dataSettingsVV);
     fragment.appendChild(new row("Followers/Fic Ratio","datafic-FF"));
     let dataSettingsRT = new row("Personalized Reading Times","datafic-RT");
+    dataSettingsRT.lastChild.appendChild(document.createElement("BR"));
     dataSettingsRT.lastChild.appendChild(document.createTextNode("Your reading speed, in words per minute:"));
     dataSettingsRT.lastChild.appendChild(new textIn("datafic-WPM", 250));
     fragment.appendChild(dataSettingsRT);

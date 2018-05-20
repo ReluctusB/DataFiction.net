@@ -36,17 +36,14 @@ function eleBuilder(eleStr, propObj) {
 }
 
 //Follow/Fic
-function cardFicFollow() {
-    let cards = document.getElementsByClassName("user-card");
-    for (let i=0;i<cards.length;i++) {
-        let links = cards[i].getElementsByClassName("user-links")[0];
-        let fics = kConvert(links.childNodes[0].firstChild.textContent);
-        let followers = kConvert(links.childNodes[2].firstChild.textContent);
-        let ratio = (followers/fics).toFixed(1);
-        if (!isNaN(ratio) && isFinite(ratio)) {
-            links.childNodes[2].firstChild.innerHTML = followers + " (" + ratio + ")";
-            cards[i].getElementsByClassName("sub-info")[0].innerHTML = "<b>"+followers+"</b> followers · <b>"+fics+"</b> stories · <b>"+ratio+"</b> f/f ratio";
-        }
+function cardFicFollow(card) {
+    let links = card.getElementsByClassName("user-links")[0];
+    let fics = kConvert(links.childNodes[0].firstChild.textContent);
+    let followers = kConvert(links.childNodes[2].firstChild.textContent);
+    let ratio = (followers/fics).toFixed(1);
+    if (!isNaN(ratio) && isFinite(ratio)) {
+        links.childNodes[2].firstChild.innerText = followers + " (" + ratio + ")";
+        card.getElementsByClassName("sub-info")[0].innerHTML = "<b>"+followers+"</b> followers · <b>"+fics+"</b> stories · <b>"+ratio+"</b> f/f ratio";
     }
 }
 
@@ -67,9 +64,15 @@ function ficFollow() {
     let authorLinks = document.querySelectorAll("a[href*='/user/']");
     //Starting at 11 gets us past the links in the header - RB
     for (let i=11;i<authorLinks.length;i++) {
-        authorLinks[i].addEventListener("mouseover",function(){setTimeout(cardFicFollow,500);});
+        authorLinks[i].addEventListener("mouseover",() => setTimeout(() => {
+            let curCards = document.getElementsByClassName("user-card");
+            cardFicFollow(curCards[curCards.length-1]);
+        },400));
     }
-    cardFicFollow();
+    let cards = document.getElementsByClassName("user-card");
+    for (let i=0;i<cards.length;i++) {
+        cardFicFollow(cards[i]);
+    }
 }
 
 //Votes/Views
@@ -122,7 +125,7 @@ function readingTime() {
         let sheet = document.head.appendChild(document.createElement("style")).sheet;
         sheet.insertRule('.word_count {text-align:right; width:25%}',sheet.cssRules.length);
         for (let i=0;i<wordCount.length;i++) {
-            wordCount[i].parentNode.innerHTML += " ·&nbsp;" + timeConvert(kConvert(wordCount[i].textContent)/userWMP);
+            wordCount[i].parentNode.insertAdjacentHTML('beforeend'," ·&nbsp;" + timeConvert(kConvert(wordCount[i].textContent)/userWMP));
         }
     }
     let wordCountList = document.querySelector("div.content_box i.fa-font + b");
@@ -167,7 +170,6 @@ function averagePost() {
 }
 
 //Settings Manager
-
 function row(label, setting) {
     this.element = document.createElement("TR");
     this.element.style.gridTemplateColumns = "35% 65%";

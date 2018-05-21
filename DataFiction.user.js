@@ -255,6 +255,7 @@ function settingSetup() {
 }
 
 //Main
+const start = new Date().getTime();
 const version = GM_info.script.version;
 const setList = ["datafic-VV","datafic-FF","datafic-RT","datafic-AP","datafic-APD"];
 
@@ -270,3 +271,5 @@ if (datafic_settings["datafic-FF"] === 1 && !window.location.href.includes("mana
 if (datafic_settings["datafic-RT"] === 1) {readingTime();}
 if (datafic_settings["datafic-AP"] === 1) {averagePost();}
 if (window.location.href.includes("manage/local-settings")) {setUpManager();}
+
+document.querySelector("div.footer > div.block").insertAdjacentHTML("beforeend","<br>DataFiction.net applied in <a>" + ((new Date()).getTime() - start)/1000 + " seconds</a>");

@@ -20,4 +20,11 @@ The Personalized Reading Times feature provides estimated reading times of stori
 The reading speed defaults to the national average of 250. To use this feature properly, you'll want to input your personal reading speed in words per minute (WPM) into the text field in the Local Settings page. To find your WPM, use this simple test: [What speed do you read?](https://www.staples.com/sbd/cre/marketing/technology-research-centers/ereaders/speed-reader/iframe.html)
 
 ### Average Post Schedule
-The Average Post Schedule feature displays the average time between a story's chapter postings, and the time since the last chapter was posted. They are displayed below the chapter list on a story's page and in a list of stories when in full view. In addition, the estimated date of the next chapter will be displayed if you hover over the average. By Default, average post times will only display on stories marked "Incomplete", and time since last update will only be displayed on stories marked either "Incomplete" or "On Hiatus". These can be made to display on all stories by turning on the "Display regardless of completion" option from the Local Settings page.
+The Average Post Schedule feature displays the average time between a story's chapter postings, and the time since the last chapter was posted. They are displayed below the chapter list on a story's page and in a list of stories when in full view. In addition, the estimated date of the next chapter will be displayed if you hover over the average. By default, average post times will only display on stories marked "Incomplete", and time since last update will only be displayed on stories marked either "Incomplete" or "On Hiatus". These can be made to display on all stories by turning on the "Display regardless of completion" option from the Local Settings page.
+
+## Chapter Analysis
+The Chapter Analysis feature adds an extra button to the chapter toolbar that, when clicked, will display a popup containing information about that chapter. That information includes:
+- Word, paragraph, sentence and paragraph counts
+- The chapter's [Automated Readability Index (ARI)](https://en.wikipedia.org/wiki/Automated_readability_index) score and age level
+- The top ten most frequent uncommon words in the text and the number of times they occur, arranged in order of prevalence
+- The number of occurances of all words in the chapter, arranged in order of prevalence (hidden initially to improve performance)

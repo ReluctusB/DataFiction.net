@@ -320,7 +320,7 @@ function setUpManager() {
         inVal = parseInt(inVal);
         return (isNaN(inVal)?(ele.style.backgroundColor = "#b97e6e",null):(ele.style.backgroundColor = "#86b75c",inVal));
     }
-
+  
     const fragment = document.createDocumentFragment();
     const dataSettingsRowHeader = eleBuilder("TR", {class:"section_header", HTML:"<td colspan='2'><b>DataFiction.net Settings</b></td>"});
     fragment.appendChild(dataSettingsRowHeader);

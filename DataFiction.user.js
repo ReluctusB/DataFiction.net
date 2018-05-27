@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DataFiction
 // @namespace    https://github.com/ReluctusB
-// @version      1.2.6
+// @version      1.3.0
 // @description  DataFiction.net is a set of userscripts that provides useful (and more esoteric) information to users of Fimfiction.net at a glance.
 // @author       RB
 // @match        https://www.fimfiction.net/*
@@ -32,7 +32,18 @@ function eleBuilder(eleStr, propObj) {
     if (propObj.text) {ele.innerText = propObj.text;}
     if (propObj.id) {ele.id = propObj.id;}
     if (propObj.type) {ele.type = propObj.type;}
+    if (propObj.event) {ele.addEventListener(propObj.event[0], propObj.event[1], false);}
     return ele;
+}
+
+function popUp(header, width, dim, id) {
+    if (document.getElementById(id)) {win.fQuery.removeElement(document.getElementById(id));}
+    const upPop = new win.PopUpMenu(id,header);
+    upPop.SetWidth(width)
+    upPop.SetFixed(true);
+    upPop.SetSoftClose(false);
+    upPop.SetDimmerEnabled(dim);
+    return upPop;
 }
 
 //Follow/Fic
@@ -62,11 +73,11 @@ function ficFollow() {
         }
     }
     const authorLinks = document.querySelectorAll("a[href*='/user/']");
-    for (let i=11;i<authorLinks.length;i++) {                                //Starting at 11 gets us past the links in the header - RB
+    for (let i=11;i<authorLinks.length;i++) { //Starting at 11 gets us past the links in the header - RB
         authorLinks[i].addEventListener("mouseover",() => setTimeout(() => {
             const curCards = document.getElementsByClassName("user-card");
-            if (curCards.length > 0) {cardFicFollow(curCards[curCards.length-1]);}   //fimfic doesn't always load the card generator faster than the user can hover. -RB
-        },400));
+            if (curCards.length > 0) {cardFicFollow(curCards[curCards.length-1]);} //fimfic doesn't always load the card generator faster than the user can hover. -RB
+        },500));
     }
     const cards = document.getElementsByClassName("user-card");
     for (let i=0;i<cards.length;i++) {
@@ -82,7 +93,7 @@ function voteViews() {
     let ups, views, ratio, appendEle, outSpan, appBefore, fragment, fragBefore, approx, parentClasses;
     for (let i=0;i<bars.length;i++) {
         parentClasses = bars[i].parentNode.classList;
-        fragment = new DocumentFragment();
+        fragment = document.createDocumentFragment();
         if (parentClasses.contains("story-card__info")) {
             ups = kConvert(bars[i].previousSibling.textContent);
             views = kConvert(bars[i].parentNode.childNodes[14].textContent.replace("views",""));
@@ -151,7 +162,7 @@ function averagePost() {
                 if (postDates[i-1]) {diffSum += Math.abs(postDates[i] - postDates[i-1]);}
             }
             const lastUpdate = postDates[postDates.length - 1];
-            const fragment = new DocumentFragment();
+            const fragment = document.createDocumentFragment();
             fragment.appendChild(document.createElement("BR"));
             if (diffSum > 0 && (footer.getElementsByTagName("SPAN")[0].title !== "On Hiatus" || datafic_settings["datafic-APD"] === 1)) {
                 const postSpan = eleBuilder("SPAN", {class:"approved-date",text:"Updates on average every " + timeConvert((diffSum/postDates.length)/60000)});
@@ -162,81 +173,174 @@ function averagePost() {
             }
             const lastUp = (Date.now() - lastUpdate)/60000;
             fragment.appendChild(eleBuilder("SPAN", {class:"approved-date",text:"Last update: " + (lastUp > 1440?timeConvert(lastUp) + " ago":"today")}));
-            footer.append(fragment);
+            footer.appendChild(fragment);
         }
     }
 }
 
-//Settings Manager
-function row(label, setting) {
-    this.element = document.createElement("TR");
-    this.element.style.gridTemplateColumns = "35% 65%";
-    const lab = eleBuilder("TD", {class:"label",text:label + " "});
-    const infoLink = eleBuilder("A", {HTML:"<i class='fa fa-question-circle'></i>"});
-    infoLink.href = "https://github.com/ReluctusB/DataFiction.net/blob/Dev-compiled/features.md#"+label.toLowerCase().replace(/\//g,"").replace(/ /g,"-");
-    infoLink.target="_blank";
-    lab.appendChild(infoLink);
-    this.element.appendChild(lab);
-    const opt = document.createElement("TD");
-    opt.appendChild(toggleIn(setting));
-    this.element.appendChild(opt);
-    return this.element;
-}
-
-function toggleIn(localVar) {
-    this.element = eleBuilder("LABEL",{class:"toggleable-switch"});
-    const optBox = eleBuilder("INPUT",{id:localVar, type:"checkbox"});
-    this.element.appendChild(optBox);
-    this.element.appendChild(document.createElement("A"));
-    optBox.addEventListener("change",() => toggleSetting(localVar));
-    return this.element;
-}
-
-function textIn(localVar, defaultVar) {
-    this.element = eleBuilder("INPUT",{type:"text"});
-    this.element.value = datafic_settings[localVar]?datafic_settings[localVar]:defaultVar;
-    this.element.addEventListener("change", function(){datafic_settings[localVar] = verify(this.value,this);
-    localStorage["datafic-settings"] = JSON.stringify(datafic_settings);});
-    return this.element;
-}
-
-function settingDisplay() {
-    for(let i = 0; i < setList.length; i++) {
-        document.getElementById(setList[i]).checked = datafic_settings[setList[i]] === 1?true:false;
+//Chapter Analyzer
+function chapterAnalyze() {
+    function getChapter() {
+        let chapter = document.querySelector("div#chapter-body > div.bbcode").innerHTML.replace(/<br>|<\/(p|ul|ol)>/g,"\n").replace(/<\/li>/g," ");
+        let doc = new DOMParser().parseFromString(chapter, 'text/html');
+        let math = doc.getElementsByClassName("math");
+        for (let i=0;i<math.length;i++) {
+            math[i].textContent = "";
+        }
+        return(doc.body.textContent);
     }
+
+    function countWords(wordArray) {
+        let totalWordList = [[wordArray[0].toLowerCase(),0]];
+        for (let i=0;i<wordArray.length;i++){
+            let inVal = wordArray[i].toLowerCase(), len = totalWordList.length;
+            for (let j=0;j<len;j++) {
+                if (totalWordList[j][0] === inVal) {totalWordList[j][1]++;
+                    break;
+                } else if (j+1 === totalWordList.length) {
+                    totalWordList.push([inVal, 1])
+                }
+            }
+        }
+        return totalWordList.sort((a,b)=> b[1] - a[1]);
+    }
+
+    function generateWcTable(title, list) {
+        let wcTable = "<table style='margin:0 auto;'><th colspan='2'><b>"+title+"</b><th>";
+        for (let i=0;i<list.length;i++) {
+            wcTable += "<tr style='display:grid;grid-template-columns:115px 35px;'><td style='overflow:hidden;'>"+list[i][0]+"</td><td style='text-align:right;'>"+list[i][1]+"</td></tr>";
+        }
+        return (wcTable += "</table>");
+    }
+
+    const start = new Date().getTime();
+    const chapterText = getChapter();
+    const wordList = chapterText.split(/[^\w&][s]?[^a-zA-ZÀ-ÿ0-9&_]*[^\w&]|[^\w'&.(’-]/g).filter(x => x);
+    const wordCountArray = countWords(wordList);
+    const charCount = chapterText.match(/[A-Za-zÀ-ÿ]|\d/g).length;
+    const sentenceCount = chapterText.match(/([!?\.)…—-]|[\.]{3})["”’]?[\s][A-Z\n“"]|.$/g).length;
+    const paragraphCount = chapterText.match(/\n/g).length;
+    const functionWords = ["a","about","above","across","after","afterwards","again","against","all","almost","alone","along","already","also","although","always","am","among",
+                         "amongst","amoungst","an","and","another","any","anyhow","anyone","anything","anyway","anywhere","are","around","as","at","be","became","because","been",
+                         "before","beforehand","behind","being","below","beside","besides","between","beyond","both","but","by","can","cannot","could","dare","despite","did","do",
+                         "does","done","down","during","each","eg","either","else","elsewhere","enough","etc","even","ever","every","everyone","everything","everywhere","except","few",
+                         "first","for","former","formerly","from","further","furthermore","had","has","have","he","hence","her","here","hereabouts","hereafter","hereby","herein",
+                         "hereinafter","heretofore","hereunder","hereupon","herewith","hers","herself","him","himself","his","how","however","i","ie","if","in","indeed","inside",
+                         "instead","into","is","it","its","itself","last","latter","latterly","least","less","lot","lots","many","may","me","meanwhile","might","mine","more",
+                         "moreover","most","mostly","much","must","my","myself","namely","near","need","neither","never","nevertheless","next","no","nobody","none","noone","nor","not",
+                         "nothing","now","nowhere","of","off","often","oftentimes","on","once","one","only","onto","or","other","others","otherwise","ought","our","ours","ourselves","out",
+                         "outside","over","per","perhaps","rather","re","same","second","several","shall","she","should","since","so", "some","somehow","someone","something","sometime",
+                         "sometimes","somewhat","somewhere","still","such","than","that","the","their","theirs","them","themselves","then","thence","there","thereabouts","thereafter",
+                         "thereby","therefore","therein","thereof","thereon","thereupon","these","they","third","this","those","though","through","throughout","thru","thus","to","together","too",
+                         "top","toward","towards","under","until","up","upon","us","used","very","via","was","we","well","were","what","whatever","when","whence","whenever","where","whereafter",
+                         "whereas","whereby","wherein","whereupon","wherever","whether","which","while","whither","who","whoever","whole","whom","whose","why","whyever","will","with",
+                         "within","without","would","yes","yet","you","your","yours","yourself","yourselves"];
+    let topUncommon = [];
+    for (let i = 0;topUncommon.length < 10 && i < wordCountArray.length;i++) {
+        if (!functionWords.includes(wordCountArray[i][0])) {topUncommon.push(wordCountArray[i]);}
+    }
+    const ARI = (4.71*(charCount/wordList.length)+.5*(wordList.length/sentenceCount)-21.43);
+    let HTMLString = `
+                    <label>
+                        <p>Words: <b>${wordList.length}</b></p>
+                        <p>Paragraphs: <b>${paragraphCount}</b></p>
+                        <p>Sentences: <b>${sentenceCount}</b></p>
+                        <p>Characters: <b>${charCount}</b></p>
+                    </label>
+                    <label>
+                        <p>ARI: <b>${ARI.toFixed(1)}</b> (Ages ${ARI>=15?"18-22":(Math.round(ARI)+4) + "-" + (Math.round(ARI)+5)})</p>
+                    </label>
+                    <label>
+                        ${generateWcTable("Top Uncommon",topUncommon)}
+                    </label>
+                    `;
+    const chapterInfo = popUp("<i class='fa fa-info'></i> Chapter Data",250,0,"CI")
+    chapterInfo.content.insertAdjacentHTML('beforeend',"<div class='std'>" + HTMLString + "</div>");
+    const UWcList = eleBuilder("LABEL",{HTML:"<a>Show All Words<i class='fa fa-angle-down'></i></a>"})
+    UWcList.addEventListener("click",function(){this.innerHTML="<div style='height:13.2rem;overflow-y:scroll;'>"+generateWcTable("All Words",wordCountArray)+"</div>";});
+    chapterInfo.content.firstChild.appendChild(UWcList);
+    chapterInfo.SetFooter("<i>Generated in " + (((new Date()).getTime() - start)/1000) + " seconds</i>");
+    chapterInfo.Show();
 }
 
-function toggleSetting(setting) {
-    datafic_settings[setting] = datafic_settings[setting] === 1?0:1;
-    localStorage["datafic-settings"] = JSON.stringify(datafic_settings);
+function addAnalyzer () {
+    document.querySelector("a[data-click='toggleFormatPopup']").innerHTML = "<i class='fa fa-font'></i>";
+    document.getElementsByClassName("chapter_download_links")[0].appendChild(eleBuilder("LI",{HTML:"<a><i class='fa fa-info'></i></a>",event:["click",chapterAnalyze]}));
 }
 
-function verify(inVal, ele) {
-    ele.style.color = "black";
-    inVal = parseInt(inVal);
-    return isNaN(inVal)?(ele.style.backgroundColor = "#b97e6e",null):(ele.style.backgroundColor = "#86b75c",inVal);
-}
+//Settings Manager
+
 
 function setUpManager() {
-    const fragment = new DocumentFragment();
+    function row(label, setting) {
+        const ele = document.createElement("TR");
+        ele.style.gridTemplateColumns = "35% 65%";
+        const lab = eleBuilder("TD", {class:"label",text:label + " "});
+        const infoLink = eleBuilder("A", {HTML:"<i class='fa fa-question-circle'></i>"});
+        infoLink.href = "https://github.com/ReluctusB/DataFiction.net/blob/Dev-compiled/features.md#"+label.toLowerCase().replace(/\//g,"").replace(/ /g,"-");
+        infoLink.target="_blank";
+        lab.appendChild(infoLink);
+        ele.appendChild(lab);
+        const opt = document.createElement("TD");
+        opt.appendChild(toggleIn(setting));
+        ele.appendChild(opt);
+        return ele;
+    }
+
+    function toggleIn(localVar) {
+        const ele = eleBuilder("LABEL",{class:"toggleable-switch"});
+        const optBox = eleBuilder("INPUT",{id:localVar, type:"checkbox"});
+        ele.appendChild(optBox);
+        ele.appendChild(document.createElement("A"));
+        optBox.addEventListener("change",() => toggleSetting(localVar));
+        return ele;
+    }
+
+    function textIn(localVar, defaultVar) {
+        const ele = eleBuilder("INPUT",{type:"text"});
+        ele.value = datafic_settings[localVar]?datafic_settings[localVar]:defaultVar;
+        ele.addEventListener("change", function(){datafic_settings[localVar] = verify(this.value,this);
+        localStorage["datafic-settings"] = JSON.stringify(datafic_settings);});
+        return ele;
+    }
+
+    function settingDisplay() {
+        for(let i = 0; i < setList.length; i++) {
+            document.getElementById(setList[i]).checked = datafic_settings[setList[i]] === 1?true:false;
+        }
+    }
+
+    function toggleSetting(setting) {
+        datafic_settings[setting] = datafic_settings[setting] === 1?0:1;
+        localStorage["datafic-settings"] = JSON.stringify(datafic_settings);
+    }
+
+    function verify(inVal, ele) {
+        ele.style.color = "black";
+        inVal = parseInt(inVal);
+        return (isNaN(inVal)?(ele.style.backgroundColor = "#b97e6e",null):(ele.style.backgroundColor = "#86b75c",inVal));
+    }
+
+    const fragment = document.createDocumentFragment();
     const dataSettingsRowHeader = eleBuilder("TR", {class:"section_header", HTML:"<td colspan='2'><b>DataFiction.net Settings</b></td>"});
     fragment.appendChild(dataSettingsRowHeader);
-    const dataSettingsVV = new row("Votes/Views Percentage", "datafic-VV");
+    const dataSettingsVV = row("Votes/Views Percentage", "datafic-VV");
     dataSettingsVV.lastChild.appendChild(document.createElement("BR"));
     dataSettingsVV.lastChild.appendChild(document.createTextNode("Highlight percentages above: (make blank to disable)"));
-    dataSettingsVV.lastChild.appendChild(new textIn("datafic-VVT", 10));
+    dataSettingsVV.lastChild.appendChild(textIn("datafic-VVT", 10));
     fragment.appendChild(dataSettingsVV);
-    fragment.appendChild(new row("Followers/Fic Ratio","datafic-FF"));
-    const dataSettingsRT = new row("Personalized Reading Times","datafic-RT");
+    fragment.appendChild(row("Followers/Fic Ratio","datafic-FF"));
+    const dataSettingsRT = row("Personalized Reading Times","datafic-RT");
     dataSettingsRT.lastChild.appendChild(document.createElement("BR"));
     dataSettingsRT.lastChild.appendChild(document.createTextNode("Your reading speed, in words per minute:"));
-    dataSettingsRT.lastChild.appendChild(new textIn("datafic-WPM", 250));
+    dataSettingsRT.lastChild.appendChild(textIn("datafic-WPM", 250));
     fragment.appendChild(dataSettingsRT);
-    const dataSettingsAP = new row("Average Post Schedule","datafic-AP");
+    const dataSettingsAP = row("Average Post Schedule","datafic-AP");
     dataSettingsAP.lastChild.appendChild(document.createElement("BR"));
-    dataSettingsAP.lastChild.appendChild(new toggleIn("datafic-APD"));
+    dataSettingsAP.lastChild.appendChild(toggleIn("datafic-APD"));
     dataSettingsAP.lastChild.appendChild(document.createTextNode("Display regardless of completion"));
     fragment.appendChild(dataSettingsAP);
+    fragment.appendChild(row("Chapter Analysis", "datafic-CA"));
     document.querySelector("table.properties > tbody").appendChild(fragment);
     settingDisplay();
 }
@@ -249,14 +353,16 @@ function settingSetup() {
             if (!settings[setList[i]]) {settings[setList[i]] = 0;}
         }
     } else {
-        settings = {"datafic-VV":1,"datafic-FF":1,"datafic-RT":0,"datafic-AP":1};
+        settings = {"datafic-VV":1,"datafic-FF":1,"datafic-RT":0,"datafic-AP":1,"datafic-CA":1};
     }
     localStorage["datafic-settings"] = JSON.stringify(settings);
 }
 
 //Main
+const start = new Date().getTime();
+const win = this.unsafeWindow || window.unsafeWindow || window;
 const version = GM_info.script.version;
-const setList = ["datafic-VV","datafic-FF","datafic-RT","datafic-AP","datafic-APD"];
+const setList = ["datafic-VV","datafic-FF","datafic-RT","datafic-AP","datafic-APD","datafic-CA"];
 
 if (localStorage.getItem("datafic-version") !== version || !localStorage["datafic-settings"]) {
     settingSetup();
@@ -269,4 +375,7 @@ if (datafic_settings["datafic-VV"] === 1) {voteViews();}
 if (datafic_settings["datafic-FF"] === 1 && !window.location.href.includes("manage")) {ficFollow();}
 if (datafic_settings["datafic-RT"] === 1) {readingTime();}
 if (datafic_settings["datafic-AP"] === 1) {averagePost();}
+if (datafic_settings["datafic-CA"] === 1 && document.getElementById("chapter_toolbar_container")) {addAnalyzer();}
 if (window.location.href.includes("manage/local-settings")) {setUpManager();}
+
+document.getElementsByClassName("block")[0].insertAdjacentHTML("beforeend","<br>DataFiction.net applied in <a>" + ((new Date()).getTime() - start)/1000 + " seconds</a>");

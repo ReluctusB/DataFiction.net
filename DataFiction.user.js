@@ -226,7 +226,8 @@ function chapterAnalyze() {
                         || (wordSplit[i-1] === "l" && wordSplit[i+1] === "e" && wordSplit[i+2] === "r")
                         || (wordSplit[i-3] === "t" && wordSplit[i-2] === "t" && wordSplit[i-1] === "l")
                         || (wordSplit[i-2] === "s" && wordSplit[i-1] === "t" && wordSplit[i+1] === "a")
-                        || (wordSplit[i-2] === "a" && wordSplit[i-1] === "y" && wordSplit[i+1] === "n" && wordSplit[i+1] === "g")
+                        || (wordSplit[i-2] === "a" && wordSplit[i-1] === "y" && wordSplit[i+1] === "n" && wordSplit[i+2] === "g")
+                        || (wordSplit[i-1] === "k" && wordSplit[i+1] === "e" && wordSplit[i+2] === "r")
                         || (wordSplit[i-1] === "r" && wordSplit[i+1] === "e" && wordSplit[i+2] === "n" && wordSplit[i+3] !== "d")
                         || (vowels.includes(wordSplit[i-1]) && wordSplit[i+1] === "n" && wordSplit[i+2] === "g")) {
                             syllables ++;
@@ -236,6 +237,8 @@ function chapterAnalyze() {
                         || (wordSplit[i+1] === "o" && wordSplit[i+2] === "r")
                         || (wordSplit[i-1] === "i" && i === wordSplit.length - 1)
                         || (wordSplit[i-1] === "p" && wordSplit[i+1] === "o")
+                        || (wordSplit[i-4] === "n" && wordSplit[i-3] === "u" && wordSplit[i-2] === "i" && wordSplit[i-1] === "n")
+                        || (wordSplit[i-2] === "c" && wordSplit[i-1] === "l" && i === wordSplit.length - 1)
                         || (wordSplit[i-3] === "t" && wordSplit[i-2] === "t" && wordSplit[i-1] === "l" && i === wordSplit.length - 1)) {
                             syllables ++;
                         } else if (wordSplit[i+1] === "l" && wordSplit[i+2] === "y"
@@ -279,7 +282,7 @@ function chapterAnalyze() {
             let nT = word.indexOf("n't") !== -1 ?word.indexOf("n't"):word.indexOf("n’t");
             if (nT != -1 && !vowels.includes(word.charAt(nT-1))) {syllables ++;}
 
-            // console.log(word + " : " + (syllables).toString());
+            console.log(word + " : " + (syllables).toString());
 
             syllablesTotal += syllables;
         });
@@ -455,60 +458,3 @@ if (datafic_settings["datafic-CA"] === 1 && document.getElementById("chapter_too
 if (window.location.href.includes("manage/local-settings")) {setUpManager();}
 
 document.getElementsByClassName("block")[0].insertAdjacentHTML("beforeend","<br>DataFiction.net applied in <a>" + ((new Date()).getTime() - start)/1000 + " seconds</a>");
-
-/*
-console.log(syllableCountSingle("PYRAMIDALLY") + ":5:PYRAMIDALLY");
-console.log(syllableCountSingle("MISERICORDS") + ":4:MISERICORDS");
-console.log(syllableCountSingle("THYROXINS") + ":3:THYROXINS");
-console.log(syllableCountSingle("PLICATION") + ":3:PLICATION");
-console.log(syllableCountSingle("PERTINACIOUS") + ":4:PERTINACIOUS");
-console.log(syllableCountSingle("LEAL") + ":1:LEAL");
-console.log(syllableCountSingle("LYCOPOD") + ":3:LYCOPOD");
-console.log(syllableCountSingle("FRIPPERIES") + ":3:FRIPPERIES");
-console.log(syllableCountSingle("INTERDEPENDENCY") + ":6:INTERDEPENDENCY");
-console.log(syllableCountSingle("RITORNELLOS") + ":4:RITORNELLOS");
-console.log(syllableCountSingle("PRESSORS ") + ":2:PRESSORS");
-console.log(syllableCountSingle("SCOTIAS") + ":2:SCOTIAS");
-console.log(syllableCountSingle("PROPRIETARY") + ":5:PROPRIETARY");
-console.log(syllableCountSingle("TERRITORIALITY") + ":7:TERRITORIALITY");
-console.log(syllableCountSingle("REALITY") + ":4:REALITY");
-console.log(syllableCountSingle("UNSCREWED") + ":2:UNSCREWED");
-console.log(syllableCountSingle("FOCALIZATION") + ":5:FOCALIZATION");
-console.log(syllableCountSingle("CONTRARIETY") + ":5:CONTRARIETY");
-console.log(syllableCountSingle("UNCURIOUS") + ":4:UNCURIOUS");
-console.log(syllableCountSingle("SCANDIAS") + ":3:SCANDIAS");
-console.log(syllableCountSingle("INACTIVATION") + ":5:INACTIVATION");
-console.log(syllableCountSingle("UNSYSTEMATIZED") + ":5:UNSYSTEMATIZED");
-console.log(syllableCountSingle("PREORDAINMENT") + ":4:PREORDAINMENT");
-console.log(syllableCountSingle("TROUSSEAU") + ":2:TROUSSEAU");
-console.log(syllableCountSingle("MODERATENESSES") + ":6:MODERATENESSES");
-console.log(syllableCountSingle("ACCOUCHEMENTS") + ":4:ACCOUCHEMENTS");
-console.log(syllableCountSingle("VICEROYSHIP") + ":4:VICEROYSHIP");
-console.log(syllableCountSingle("CACHEXIAS") + ":4:CACHEXIAS");
-console.log(syllableCountSingle("CUDDLIER") + ":3:CUDDLIER");
-console.log(syllableCountSingle("ANNUNCIATORY") + ":6:ANNUNCIATORY");
-console.log(syllableCountSingle("UNCREATES") + ":3:UNCREATES");
-console.log(syllableCountSingle("MEASURABILITIES") + ":6:MEASURABILITIES");
-console.log(syllableCountSingle("PHILISTIA") + ":4:PHILISTIA");
-console.log(syllableCountSingle("COUNTERINSURGENCY") + ":6:COUNTERINSURGENCY");
-console.log(syllableCountSingle("IDEA") + ":3:IDEA");
-console.log(syllableCountSingle("IDEAS") + ":4:IDEAS");
-console.log(syllableCountSingle("PROUSTIAN") + ":3:PROUSTIAN");
-console.log(syllableCountSingle("IDEAL") + ":3:IDEAL");
-console.log(syllableCountSingle("UREA") + ":3:UREA");
-console.log(syllableCountSingle("REAL") + ":2:REAL");
-console.log(syllableCountSingle("CREATE") + ":2:CREATE");
-console.log(syllableCountSingle("CREATES") + ":2:CREATES");
-console.log(syllableCountSingle("VACUO") + ":3:VACUO");
-console.log(syllableCountSingle("SAILED") + ":1:SAILED");
-console.log(syllableCountSingle("ED") + ":1:ED");
-console.log(syllableCountSingle("TOTED") + ":2:TOTED");
-console.log(syllableCountSingle("UNDERFED") + ":3:UNDERFED");
-console.log(syllableCountSingle("JADED") + ":2:JADED");
-console.log(syllableCountSingle("INBRED") + ":2:INBRED");
-console.log(syllableCountSingle("STATES") + ":1:STATES");
-console.log(syllableCountSingle("UTILIZES") + ":4:UTILIZES");
-console.log(syllableCountSingle("CLICHÉ") + ":2:CLICHÉ");
-console.log(syllableCountSingle("SHUSHES") + ":2:SHUSHES");
-console.log(syllableCountSingle("PERTINACIOUS") + ":4:PERTINACIOUS");
-*/

@@ -54,7 +54,7 @@ function cardFicFollow(card) {
     const ratio = (followers/fics).toFixed(1);
     if (!isNaN(ratio) && isFinite(ratio)) {
         links.childNodes[2].firstChild.innerText = followers + " (" + ratio + ")";
-        card.getElementsByClassName("sub-info")[0].innerHTML = "<b>"+followers+"</b> followers · <b>"+fics+"</b> stories · <b>"+ratio+"</b> f/f ratio";
+        card.getElementsByClassName("sub-info")[0].innerHTML = `<b>${followers}</b> followers · <b>${fics}</b> stories · <b>${ratio}</b> f/f ratio`;
     }
 }
 
@@ -65,11 +65,11 @@ function ficFollow() {
         const ratio = (followers/fics).toFixed(2);
         if (!isNaN(ratio) && isFinite(ratio)) {
             const info = document.getElementsByClassName("tab-following")[0];
-            info.parentNode.insertBefore(eleBuilder("LI", {HTML:"<a><span class='number'>"+ratio+"</span> Follow/Fic</a>"}), info);
+            info.parentNode.insertBefore(eleBuilder("LI", {HTML:`<a><span class='number'>${ratio}</span> Follow/Fic</a>`}), info);
             const dropdown = document.querySelector(".mobile-header .drop-down > ul");
             dropdown.style.overflow = "hidden";
             dropdown.appendChild(eleBuilder("LI", {class:"divider"}));
-            dropdown.appendChild(eleBuilder("LI", {HTML:"<a><i class='fa fa-fw fa-eye'></i> Follow/Fic: "+ratio+"</a>"}));
+            dropdown.appendChild(eleBuilder("LI", {HTML:`<a><i class='fa fa-fw fa-eye'></i> Follow/Fic: ${ratio}</a>`}));
         }
     }
     const authorLinks = document.querySelectorAll("a[href*='/user/']");
@@ -135,7 +135,7 @@ function readingTime() {
     }
     let wordCountList = document.querySelector("div.content_box i.fa-font + b");
     if (wordCountList !== null) {
-        document.querySelector("div.content_box > span,div.content_box > p > span").title = "Based on your average reading speed of " + userWMP + " wpm";
+        document.querySelector("div.content_box > span,div.content_box > p > span").title = `Based on your average reading speed of ${userWMP} wpm`;
         document.querySelector("div.content_box i.fa-clock-o + b").nextSibling.textContent = " " + timeConvert(kConvert(wordCountList.nextSibling.textContent)/userWMP);
     }
 }
@@ -161,7 +161,7 @@ function averagePost() {
             const fragment = document.createDocumentFragment();
             fragment.appendChild(document.createElement("BR"));
             if (diffSum > 0 && (footer.getElementsByTagName("SPAN")[0].title !== "On Hiatus" || datafic_settings["datafic-APD"] === 1)) {
-                const postSpan = eleBuilder("SPAN", {class:"approved-date",text:"Updates on average every " + timeConvert((diffSum/postDates.length)/60000)});
+                const postSpan = eleBuilder("SPAN", {class:"approved-date",text:`Updates on average every ${timeConvert((diffSum/postDates.length)/60000)}`});
                 const expectedUpdate = new Date(lastUpdate + diffSum/postDates.length);
                 const timeTo = (expectedUpdate - Date.now())/60000;
                 postSpan.title = "Expected to update on " + expectedUpdate.toDateString() + (timeTo > 0?" (" + timeConvert(timeTo) + ")":"");
@@ -200,17 +200,29 @@ function chapterAnalyze() {
     }
 
     function generateWcTable(title, list) {
-        let wcTable = "<table style='margin:0 auto;'><th colspan='2'><b>"+title+"</b><th>";
-        list.forEach(item => {
-            wcTable += "<tr style='display:grid;grid-template-columns:115px 35px;'><td style='overflow:hidden;'>"
-                + item[0] + "</td><td style='text-align:right;'>"
-                + item[1] + "</td></tr>";
+        let wcTable = `<table style='margin:0 auto;'><th colspan='2'><b>${title}</b><th>`;
+        list.forEach((item, i) => {
+            wcTable += `<tr style='display:grid;grid-template-columns:115px 35px;'title='#${(i+1)}'>
+                            <td style='overflow:hidden;'>${item[0]}</td>
+                            <td style='text-align:right;'>${item[1]}</td>
+                        </tr>`;
         });
         return (wcTable += "</table>");
     }
 
+    function fRResult(score) {
+        return score >= 90 ? "Very Easy"
+            : score >= 80 ? "Easy"
+            : score >= 70 ? "Fairly Easy"
+            : score >= 60 ? "Standard"
+            : score >= 50 ? "Fairly Difficult"
+            : score >= 30 ? "Difficult"
+            : "Very confusing";
+    }
+
     function countSyllables(wordList) {
         let syllablesTotal = 0;
+        let polysTotal = 0;
         const vowels = ["a","e","i","o","u","y","é"];
         wordList.forEach((word) => {
             word = word.toLowerCase();
@@ -281,13 +293,12 @@ function chapterAnalyze() {
             if (syllables <= 0) {syllables = 1}
             let nT = word.indexOf("n't") !== -1 ?word.indexOf("n't"):word.indexOf("n’t");
             if (nT != -1 && !vowels.includes(word.charAt(nT-1))) {syllables ++;}
-
-            console.log(word + " : " + (syllables).toString());
-
+            //console.log(word + " : " + (syllables).toString());
+            if (syllables >= 3) {polysTotal++}
             syllablesTotal += syllables;
         });
-        console.log(syllablesTotal);
-        return syllablesTotal;
+        //console.log(syllablesTotal);
+        return [syllablesTotal, polysTotal];
     }
 
     const start = new Date().getTime();
@@ -298,7 +309,7 @@ function chapterAnalyze() {
     const charCount = chapterText.match(/[\wÀ-ÿ]/g).length;
     const sentenceCount = chapterText.match(/(?:[!?\.)…—-]|[\.]{3})["”’']?[\s][A-ZÀ-Þ\n“"'‘]|.$/g).length;
     const paragraphCount = chapterText.match(/\n/g).length;
-    const syllableCount = countSyllables(wordList);
+    let [syllableCount, polysCount] = countSyllables(wordList);
     const functionWords = ["a","about","above","across","after","afterwards","again","against","all","almost","alone","along","already","also","although","always","am","among",
                          "amongst","amoungst","an","and","another","any","anyhow","anyone","anything","anyway","anywhere","are","around","as","at","be","became","because","been",
                          "before","beforehand","behind","being","below","beside","besides","between","beyond","both","but","by","can","cannot","could","dare","despite","did","do",
@@ -313,7 +324,7 @@ function chapterAnalyze() {
                          "thereby","therefore","therein","thereof","thereon","thereupon","these","they","third","this","those","though","through","throughout","thru","thus","to","together","too",
                          "top","toward","towards","under","until","up","upon","us","used","very","via","was","we","well","were","what","whatever","when","whence","whenever","where","whereafter",
                          "whereas","whereby","wherein","whereupon","wherever","whether","which","while","whither","who","whoever","whole","whom","whose","why","whyever","will","with",
-                         "within","without","would","yes","yet","you","your","yours","yourself","yourselves"];
+                         "within","without","would","yes","yet","you","your","yours","yourself","yourselves","said"];
     let topUncommon = [];
     for (let i = 0;topUncommon.length < 10 && i < wordCountArray.length;i++) {
         if (!functionWords.includes(wordCountArray[i][0])) {topUncommon.push(wordCountArray[i]);}
@@ -321,17 +332,20 @@ function chapterAnalyze() {
     const ARI = (4.71*(charCount/wordCount)+.5*(wordCount/sentenceCount)-21.43);
     const FRE = 206.835-1.015*(wordCount/sentenceCount)-84.6*(syllableCount/wordCount);
     const FKGL = .39*(wordCount/sentenceCount)+11.8*(syllableCount/wordCount)-15.59;
+    const SMOG = 1.0430*Math.sqrt(polysCount*(30/sentenceCount))+3.1291;
     let HTMLString = `
                     <label>
+                        <p><b><u>Statistics</u></b></p>
                         <p>Words: <b>${wordList.length}</b></p>
                         <p>Paragraphs: <b>${paragraphCount}</b></p>
                         <p>Sentences: <b>${sentenceCount}</b></p>
-                        <p>Characters: <b>${charCount}</b></p>
                     </label>
                     <label>
+                        <p><b><u>Readability Metrics</b></u></p>
                         <p>ARI: <b>${ARI.toFixed(1)}</b> (Ages ${ARI>=15?"18-22":(Math.round(ARI)+4) + "-" + (Math.round(ARI)+5)})</p>
-                        <p>Flesch Readability: <b>${FRE.toFixed(1)}</b></p>
-                        <p>Flesch–Kincaid: <b>${FKGL.toFixed(1)}</b></p>
+                        <p>Flesch Ease: <b>${FRE.toFixed(1)}</b> (${fRResult(FRE)})</p>
+                        <p>Flesch–Kincaid: <b>${FKGL.toFixed(1)}</b> (Grade ${FKGL>=12?"12+":Math.round(FKGL)})</p>
+                        <p>SMOG: <b>${SMOG.toFixed(1)}</b> (Grade ${SMOG>=12?"12+":Math.round(SMOG)})</p>
                     </label>
                     <label>
                         ${generateWcTable("Top Uncommon",topUncommon)}
@@ -340,7 +354,7 @@ function chapterAnalyze() {
     const chapterInfo = popUp("<i class='fa fa-info'></i> Chapter Data",250,0,"CI")
     chapterInfo.content.insertAdjacentHTML('beforeend',"<div class='std'>" + HTMLString + "</div>");
     const uWcList = eleBuilder("LABEL",{HTML:"<a>Show All Words<i class='fa fa-angle-down'></i></a>"})
-    uWcList.addEventListener("click",function(){this.innerHTML="<div style='height:13.2rem;overflow-y:scroll;'>"+generateWcTable("All Words",wordCountArray)+"</div>";});
+    uWcList.addEventListener("click",function(){this.innerHTML=`<div style='height:13.2rem;overflow-y:scroll;'>${generateWcTable("All Words",wordCountArray)}</div>`;});
     chapterInfo.content.firstChild.appendChild(uWcList);
     chapterInfo.SetFooter("<i>Generated in " + (((new Date()).getTime() - start)/1000) + " seconds</i>");
     chapterInfo.Show();
@@ -457,4 +471,4 @@ if (datafic_settings["datafic-AP"] === 1) {averagePost();}
 if (datafic_settings["datafic-CA"] === 1 && document.getElementById("chapter_toolbar_container")) {addAnalyzer();}
 if (window.location.href.includes("manage/local-settings")) {setUpManager();}
 
-document.getElementsByClassName("block")[0].insertAdjacentHTML("beforeend","<br>DataFiction.net applied in <a>" + ((new Date()).getTime() - start)/1000 + " seconds</a>");
+document.getElementsByClassName("block")[0].insertAdjacentHTML("beforeend",`<br>DataFiction.net applied in <a>${((new Date()).getTime() - start)/1000} seconds</a>`);

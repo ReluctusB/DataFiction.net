@@ -306,7 +306,7 @@ function chapterAnalyze() {
     const wordCount = wordList.length;
     const wordCountArray = countWords(wordList);
     const charCount = chapterText.match(/[\wÀ-ÿ]/g).length;
-    const sentenceCount = chapterText.match(/(?:[!?\.)…—-]|[\.]{3})["”’']?[\s][A-ZÀ-Þ\n“"'‘]|.$/g).length;
+    const sentenceCount = chapterText.match(/[.!?—-][”"'’)]?[ \n]*[“"'‘(]?[A-ZÀ-Þ]|[^\s]$/gm).length;
     const paragraphCount = chapterText.match(/\n/g).length;
     let [syllableCount, polysCount] = countSyllables(wordList);
     const functionWords = ["a","about","above","across","after","afterwards","again","against","all","almost","alone","along","already","also","although","always","am","among",
@@ -344,7 +344,7 @@ function chapterAnalyze() {
                         <p>ARI: <b>${ARI.toFixed(1)}</b> (Ages ${ARI>=15?"18-22":(Math.round(ARI)+4) + "-" + (Math.round(ARI)+5)})</p>
                         <p>Flesch Ease: <b>${FRE.toFixed(1)}</b> (${fRResult(FRE)})</p>
                         <p>Flesch–Kincaid: <b>${FKGL.toFixed(1)}</b> (Grade ${FKGL>=12?"12+":Math.round(FKGL)})</p>
-                        <p>SMOG: <b>${sentenceCount >= 30 ?SMOG.toFixed(1)+"</b> (Grade "+(FKGL>=12?"12+":Math.round(FKGL))+")":"Too Short!</b>"}</p>
+                        <p>SMOG: <b>${sentenceCount >= 30 ?SMOG.toFixed(1)+"</b> (Grade "+(SMOG>=12?"12+":Math.round(SMOG))+")":"Too Short!</b>"}</p>
                     </label>
                     <label>
                         ${generateWcTable("Top Uncommon",topUncommon)}

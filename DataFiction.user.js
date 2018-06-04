@@ -80,7 +80,6 @@ function ficFollow() {
         },500));
     }
     [...document.getElementsByClassName("user-card")].forEach(card => cardFicFollow(card));
-
 }
 
 //Votes/Views
@@ -345,7 +344,7 @@ function chapterAnalyze() {
                         <p>ARI: <b>${ARI.toFixed(1)}</b> (Ages ${ARI>=15?"18-22":(Math.round(ARI)+4) + "-" + (Math.round(ARI)+5)})</p>
                         <p>Flesch Ease: <b>${FRE.toFixed(1)}</b> (${fRResult(FRE)})</p>
                         <p>Flesch–Kincaid: <b>${FKGL.toFixed(1)}</b> (Grade ${FKGL>=12?"12+":Math.round(FKGL)})</p>
-                        <p>SMOG: <b>${SMOG.toFixed(1)}</b> (Grade ${SMOG>=12?"12+":Math.round(SMOG)})</p>
+                        <p>SMOG: <b>${sentenceCount >= 30 ?SMOG.toFixed(1)+"</b> (Grade "+(FKGL>=12?"12+":Math.round(FKGL))+")":"Too Short!</b>"}</p>
                     </label>
                     <label>
                         ${generateWcTable("Top Uncommon",topUncommon)}

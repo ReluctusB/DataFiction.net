@@ -219,99 +219,6 @@ function chapterAnalyze() {
             : "Very confusing";
     }
 
-    let splitList = [];
-    let regList = [];
-
-    //I know it's an abomination. I'm working on it. -RB
-    function countSyllables(wordList) {
-        let syllablesTotal = 0;
-        let polysTotal = 0;
-        const vowels = ["a","e","i","o","u","y","é"];
-        wordList.forEach((word) => {
-            word = word.toLowerCase();
-            const wordSplit = word.split("");
-            let syllables = 0;
-            if (["'","’"].includes(wordSplit[wordSplit.length-1])) {wordSplit.pop(wordSplit.length-1);}
-            if (wordSplit[wordSplit.length-3] === "s" && ["'","’"].includes(wordSplit[wordSplit.length-2]) && wordSplit[wordSplit.length-1] === "s") {
-                syllables ++;
-                wordSplit.splice(wordSplit.length-2,2)
-            }
-            for(let i=0;i<wordSplit.length;i++) {
-                if (vowels.includes(wordSplit[i])) {
-                    if (wordSplit[i] === "i") {
-                        if (wordSplit[i-1] === "r" && wordSplit[i+1] === "e" && !["s","n","d"].includes(wordSplit[i+2])
-                        || (wordSplit[i-1] !== "t" && wordSplit[i+1] === "a")
-                        || (wordSplit[i-1] !== "c" && wordSplit[i+1] === "o" && wordSplit[i+2] === "u" && wordSplit[i+3] === "s")
-                        || (wordSplit[i-2] === "q" && wordSplit[i-1] === "u" && wordSplit[i+1] === "e")
-                        || (wordSplit[i-1] === "l" && wordSplit[i+1] === "e" && wordSplit[i+2] === "r")
-                        || (wordSplit[i-3] === "t" && wordSplit[i-2] === "t" && wordSplit[i-1] === "l")
-                        || (wordSplit[i-2] === "s" && wordSplit[i-1] === "t" && wordSplit[i+1] === "a")
-                        || (wordSplit[i-2] === "a" && wordSplit[i-1] === "y" && wordSplit[i+1] === "n" && wordSplit[i+2] === "g")
-                        || (wordSplit[i-1] === "k" && wordSplit[i+1] === "e" && wordSplit[i+2] === "r")
-                        || (wordSplit[i-1] === "r" && wordSplit[i+1] === "e" && wordSplit[i+2] === "n" && wordSplit[i+3] !== "d")
-                        || (vowels.includes(wordSplit[i-1]) && wordSplit[i+1] === "n" && wordSplit[i+2] === "g")) {
-                            syllables ++;
-                        }
-                    } else if (wordSplit[i] === "e") {
-                        if (wordSplit[i-1] === "r" && wordSplit[i+1] === "a" && wordSplit[i+2] === wordSplit[i+3] && wordSplit[i+2] !== "l"
-                        || (wordSplit[i+1] === "o" && wordSplit[i+2] === "r")
-                        || (wordSplit[i-1] === "i" && i === wordSplit.length - 1)
-                        || (wordSplit[i-1] === "p" && wordSplit[i+1] === "o")
-                        || (wordSplit[i-4] === "n" && wordSplit[i-3] === "u" && wordSplit[i-2] === "i" && wordSplit[i-1] === "n")
-                        || (i === wordSplit.length - 1
-                            && (wordSplit[i-2] === "c" && wordSplit[i-1] === "l")
-                            || (wordSplit[i-3] === "a" && wordSplit[i-2] === "b" && wordSplit[i-1] === "l")
-                            || (wordSplit[i-3] === "t" && wordSplit[i-2] === "t" && wordSplit[i-1] === "l"))) {
-                            syllables ++;
-                        } else if (wordSplit[i+1] === "l" && wordSplit[i+2] === "y"
-                        || (wordSplit[i-3] === "s" && wordSplit[i-2] === "o" && wordSplit[i-1] === "m" && !vowels.includes(wordSplit[i+1]))
-                        || (wordSplit[i-2] === "e" && wordSplit[i-1] === "r" && wordSplit[i+1] !== "d" && i !== wordSplit.length - 1)) {
-                            syllables --;
-                        } else if (wordSplit[i-1] === "d" && wordSplit[i+1] === "a") {
-                            syllables ++;
-                            if (wordSplit[i+2] === "s") {syllables ++;}
-                        } else if (i + 1 === wordSplit.length - 1 && wordSplit[i-1]) {
-                            if (wordSplit[i+1] === "s" && !(["i","s","z","x"].includes(wordSplit[i-1]))
-                            && (wordSplit[i-2] !== "s" && wordSplit[i-1] !== "h")
-                            && (wordSplit[i-2] !== "c" && wordSplit[i-1] !== "h")) {
-                                syllables --;
-                            } else if (wordSplit[i+1] === "d") {
-                                if (!(wordSplit[i-1] === "l" && !vowels.includes(wordSplit[i-2]) && !vowels.includes(wordSplit[i-3]))
-                                && (!vowels.concat(["r","d","t"]).includes(wordSplit[i-1])) || (vowels.includes(wordSplit[i-2]) && wordSplit[i-1] === "r")) {
-                                    syllables --;
-                                }
-                            }
-                        }
-                    } else if (wordSplit[i] === "o") {
-                        if (wordSplit[i-2] === "n" && wordSplit[i-1] === "y") {
-                            syllables ++;
-                        } else if (wordSplit[i+1] === "r" && wordSplit[i+2] === "e" && i+2 !== wordSplit.length-1) {
-                            syllables --;
-                        }
-                    } else if (wordSplit[i] === "u") {
-                        if (wordSplit[i+1] === "o" || (wordSplit[i+1] === "a"&&(wordSplit[i+2] !== "r"))) {syllables ++;}
-                    }
-                    if (i === wordSplit.length - 1 || wordSplit[i+1] === "-") {
-                        if (wordSplit[i] !== "e") {syllables ++;}
-                    } else if (vowels.includes(wordSplit[i+1])) {
-                        continue;
-                    } else {
-                        syllables ++;
-                    }
-                }
-            }
-            if (syllables <= 0) {syllables = 1}
-            if (word.match(/[^aeiou]n['’]t$/gm)) {syllables ++;}
-            if (word.match(/en['’]t$/gm)) {syllables --;}
-            //console.log(word + " : " + (syllables).toString());
-            splitList.push(syllables);
-            if (syllables >= 3) {polysTotal++;}
-            syllablesTotal += syllables;
-        });
-        //console.log("Total:" + syllablesTotal);
-        return [syllablesTotal, polysTotal];
-    }
-
     function countSyllablesReg(wordList) {
         let syllablesTotal = 0, polysTotal = 0;
         wordList.forEach((word) => {
@@ -331,17 +238,14 @@ function chapterAnalyze() {
             if (osylm) {syllables -= osylm.length;} //O clustered negative
             const usylp = word.match(/uo|ua[^r]/gm);
             if (usylp) {syllables += usylp.length;} //U clustered positive
-            const eVowels = word.match(/[aiouy](?![aeiouy])|e(?!$|-|[aeiouy])/gm);
+            const eVowels = word.match(/[aiouy](?![aeiouy])|e(?!$|-|[aeiouy]| )/gm);
             if (eVowels) {syllables += eVowels.length;} //Applicable vowel count (all but e at end of word)
             if (syllables <= 0) {syllables = 1} //catch-all
             if (word.match(/[^aeiou]n['’]t$/)) {syllables ++;} //ending in n't, but not en't
             if (word.match(/en['’]t$/)) {syllables --;} //ending in en't
-            //console.log(word + " : " + (syllables).toString());
-            //regList.push(syllables);
             if (syllables >= 3) {polysTotal++;}
             syllablesTotal += syllables;
         });
-        //console.log("Total:" + syllablesTotal);
         return [syllablesTotal, polysTotal];
     }
 
@@ -354,49 +258,6 @@ function chapterAnalyze() {
     const sentenceCount = chapterText.match(/[.!?—-][”"'’)]?[ \n]*[“"'‘(]?[A-ZÀ-Þ]|[^\s]$/gm).length;
     const paragraphCount = chapterText.match(/\n/g).length;
     let [syllableCount, polysCount] = countSyllablesReg(wordList);
-
-
-
-    /*
-//Performance comparison
-let splitTime = 0;
-let regTime = 0;
-
-    console.log("Starting Tests...");
-for (let i = 0; i<1000; i++) {
-    let aT1 = performance.now();
-    let [syllableCount, polysCount] = countSyllables(wordList);
-    let aT2 = performance.now();
-    splitTime += aT2-aT1;
-}
-    console.log(`Split| ${splitTime/1000}m`);
-
-for (let i = 0; i<1000; i++) {
-    let aT1 = performance.now();
-    let [syllableCount, polysCount] = countSyllablesReg(wordList);
-    let aT2 = performance.now();
-    regTime += aT2-aT1;
-}
-    console.log(`RegEx| ${regTime/1000}m`);
-
-*/
-/*
-
-    let [syllableCountOld, polysCountOld] = countSyllables(wordList);
-    let [syllableCountReg, polysCountReg] = countSyllablesReg(wordList);
-    console.log(`Split| count: ${syllableCountOld}, poly: ${polysCountOld}`);
-    console.log(`Regex| count: ${syllableCountReg}, poly: ${polysCountReg}`);
-
-    for (let i = 0; i < splitList.length; i++) {
-        if (splitList[i] !== regList[i]) {
-            console.log(`${wordList[i]}| S: ${splitList[i]} R: ${regList[i]}`);
-        }
-    }
-
-*/
-
-
-
     const functionWords = ["a","about","above","across","after","afterwards","again","against","all","almost","alone","along","already","also","although","always","am","among",
                          "amongst","amoungst","an","and","another","any","anyhow","anyone","anything","anyway","anywhere","are","around","as","at","be","became","because","been",
                          "before","beforehand","behind","being","below","beside","besides","between","beyond","both","but","by","can","cannot","could","dare","despite","did","do",

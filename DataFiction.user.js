@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DataFiction
 // @namespace    https://github.com/ReluctusB
-// @version      1.3.0
+// @version      1.3.1
 // @description  DataFiction.net is a set of userscripts that provides useful (and more esoteric) information to users of Fimfiction.net at a glance.
 // @author       RB
 // @match        https://www.fimfiction.net/*
@@ -54,7 +54,7 @@ function cardFicFollow(card) {
     const ratio = (followers/fics).toFixed(1);
     if (!isNaN(ratio) && isFinite(ratio)) {
         links.childNodes[2].firstChild.innerText = followers + " (" + ratio + ")";
-        card.getElementsByClassName("sub-info")[0].innerHTML = "<b>"+followers+"</b> followers · <b>"+fics+"</b> stories · <b>"+ratio+"</b> f/f ratio";
+        card.getElementsByClassName("sub-info")[0].innerHTML = `<b>${followers}</b> followers · <b>${fics}</b> stories · <b>${ratio}</b> f/f ratio`;
     }
 }
 
@@ -65,11 +65,11 @@ function ficFollow() {
         const ratio = (followers/fics).toFixed(2);
         if (!isNaN(ratio) && isFinite(ratio)) {
             const info = document.getElementsByClassName("tab-following")[0];
-            info.parentNode.insertBefore(eleBuilder("LI", {HTML:"<a><span class='number'>"+ratio+"</span> Follow/Fic</a>"}), info);
+            info.parentNode.insertBefore(eleBuilder("LI", {HTML:`<a><span class='number'>${ratio}</span> Follow/Fic</a>`}), info);
             const dropdown = document.querySelector(".mobile-header .drop-down > ul");
             dropdown.style.overflow = "hidden";
             dropdown.appendChild(eleBuilder("LI", {class:"divider"}));
-            dropdown.appendChild(eleBuilder("LI", {HTML:"<a><i class='fa fa-fw fa-eye'></i> Follow/Fic: "+ratio+"</a>"}));
+            dropdown.appendChild(eleBuilder("LI", {HTML:`<a><i class='fa fa-fw fa-eye'></i> Follow/Fic: ${ratio}</a>`}));
         }
     }
     const authorLinks = document.querySelectorAll("a[href*='/user/']");
@@ -79,10 +79,7 @@ function ficFollow() {
             if (curCards.length > 0) {cardFicFollow(curCards[curCards.length-1]);} //fimfic doesn't always load the card generator faster than the user can hover. -RB
         },500));
     }
-    const cards = document.getElementsByClassName("user-card");
-    for (let i=0;i<cards.length;i++) {
-        cardFicFollow(cards[i]);
-    }
+    [...document.getElementsByClassName("user-card")].forEach(card => cardFicFollow(card));
 }
 
 //Votes/Views
@@ -133,13 +130,11 @@ function readingTime() {
     const wordCount = document.querySelectorAll(".word_count > b");
     if (wordCount.length !== 0) {
         document.head.appendChild(eleBuilder("STYLE",{text:".word_count {text-align:right; width:25%}"}));
-        for (let i=0;i<wordCount.length;i++) {
-            wordCount[i].parentNode.insertAdjacentHTML('beforeend'," ·&nbsp;" + timeConvert(kConvert(wordCount[i].textContent)/userWMP));
-        }
+        wordCount.forEach(w => w.parentNode.insertAdjacentHTML('beforeend'," ·&nbsp;" + timeConvert(kConvert(w.textContent)/userWMP)))
     }
     let wordCountList = document.querySelector("div.content_box i.fa-font + b");
     if (wordCountList !== null) {
-        document.querySelector("div.content_box > span,div.content_box > p > span").title = "Based on your average reading speed of " + userWMP + " wpm";
+        document.querySelector("div.content_box > span,div.content_box > p > span").title = `Based on your average reading speed of ${userWMP} wpm`;
         document.querySelector("div.content_box i.fa-clock-o + b").nextSibling.textContent = " " + timeConvert(kConvert(wordCountList.nextSibling.textContent)/userWMP);
     }
 }
@@ -165,7 +160,7 @@ function averagePost() {
             const fragment = document.createDocumentFragment();
             fragment.appendChild(document.createElement("BR"));
             if (diffSum > 0 && (footer.getElementsByTagName("SPAN")[0].title !== "On Hiatus" || datafic_settings["datafic-APD"] === 1)) {
-                const postSpan = eleBuilder("SPAN", {class:"approved-date",text:"Updates on average every " + timeConvert((diffSum/postDates.length)/60000)});
+                const postSpan = eleBuilder("SPAN", {class:"approved-date",text:`Updates on average every ${timeConvert((diffSum/postDates.length)/60000)}`});
                 const expectedUpdate = new Date(lastUpdate + diffSum/postDates.length);
                 const timeTo = (expectedUpdate - Date.now())/60000;
                 postSpan.title = "Expected to update on " + expectedUpdate.toDateString() + (timeTo > 0?" (" + timeConvert(timeTo) + ")":"");
@@ -183,10 +178,7 @@ function chapterAnalyze() {
     function getChapter() {
         let chapter = document.querySelector("div#chapter-body > div.bbcode").innerHTML.replace(/<br>|<\/(p|ul|ol)>/g,"\n").replace(/<\/li>/g," ");
         let doc = new DOMParser().parseFromString(chapter, 'text/html');
-        let math = doc.getElementsByClassName("math");
-        for (let i=0;i<math.length;i++) {
-            math[i].textContent = "";
-        }
+        [...doc.getElementsByClassName("math_container")].forEach(mathBlock => (mathBlock.textContent=""));
         return(doc.body.textContent);
     }
 
@@ -195,7 +187,8 @@ function chapterAnalyze() {
         for (let i=0;i<wordArray.length;i++){
             let inVal = wordArray[i].toLowerCase(), len = totalWordList.length;
             for (let j=0;j<len;j++) {
-                if (totalWordList[j][0] === inVal) {totalWordList[j][1]++;
+                if (totalWordList[j][0] === inVal) {
+                    totalWordList[j][1]++;
                     break;
                 } else if (j+1 === totalWordList.length) {
                     totalWordList.push([inVal, 1])
@@ -206,20 +199,65 @@ function chapterAnalyze() {
     }
 
     function generateWcTable(title, list) {
-        let wcTable = "<table style='margin:0 auto;'><th colspan='2'><b>"+title+"</b><th>";
-        for (let i=0;i<list.length;i++) {
-            wcTable += "<tr style='display:grid;grid-template-columns:115px 35px;'><td style='overflow:hidden;'>"+list[i][0]+"</td><td style='text-align:right;'>"+list[i][1]+"</td></tr>";
-        }
+        let wcTable = `<table style='margin:0 auto;'><th colspan='2'><b>${title}</b><th>`;
+        list.forEach((item, i) => {
+            wcTable += `<tr style='display:grid;grid-template-columns:115px 35px;'title='#${(i+1)}'>
+                            <td style='overflow:hidden;'>${item[0]}</td>
+                            <td style='text-align:right;'>${item[1]}</td>
+                        </tr>`;
+        });
         return (wcTable += "</table>");
+    }
+
+    function fRResult(score) {
+        return score >= 90 ? "Very Easy"
+            : score >= 80 ? "Easy"
+            : score >= 70 ? "Fairly Easy"
+            : score >= 60 ? "Standard"
+            : score >= 50 ? "Fairly Difficult"
+            : score >= 30 ? "Difficult"
+            : "Very confusing";
+    }
+
+    function countSyllablesReg(wordList) {
+        let syllablesTotal = 0, polysTotal = 0;
+        wordList.forEach((word) => {
+            word = word.toLowerCase();
+            let syllables = 0;
+            if (word.endsWith("'")||word.endsWith("’")) {word.slice(-1)} // ending with '
+            if (word.endsWith("s's")||word.endsWith("s’s")) {word.slice(-1,-3)} //ending with s's
+            const isylp = word.match(/rie[^snd]|[^t]ia|[^c]ious|quie|lier|ttli|stia|aying|kier|rien[^d]|[aeioyu]ing/g);
+            if (isylp) {syllables += isylp.length;} //I clustered positive
+            const esylp = word.match(/rea([^l])\1|eor|ie$|peo|nuine|cle$|able$|ttle$|dea/gm);
+            if (esylp) {syllables += esylp.length;} //E clustered positive
+            const esylm = word.match(/ely|some([^aeiouy]|$)|ere(?!d|$)|(((?!c[hrl]|sh|\w[iszx]).{2}|^.{0,1})es$)|([aeiouy][^aeiouyrdt]|[^aeiouy][^laeiouyrdt]|[aeiouy][^aeiouy][^aeiouyrdt]|ll)ed$|[^c]red$/gm);
+            if (esylm) {syllables -= esylm.length;} //E clustered negative
+            const osylp = word.match(/nyo/gm);
+            if (osylp) {syllables += osylp.length;} //O clustered positive
+            const osylm = word.match(/ore[^$]/gm);
+            if (osylm) {syllables -= osylm.length;} //O clustered negative
+            const usylp = word.match(/uo|ua[^r]/gm);
+            if (usylp) {syllables += usylp.length;} //U clustered positive
+            const eVowels = word.match(/[aiouy](?![aeiouy])|e(?!$|-|[aeiouy]| )/gm);
+            if (eVowels) {syllables += eVowels.length;} //Applicable vowel count (all but e at end of word)
+            if (syllables <= 0) {syllables = 1} //catch-all
+            if (word.match(/[^aeiou]n['’]t$/)) {syllables ++;} //ending in n't, but not en't
+            if (word.match(/en['’]t$/)) {syllables --;} //ending in en't
+            if (syllables >= 3) {polysTotal++;}
+            syllablesTotal += syllables;
+        });
+        return [syllablesTotal, polysTotal];
     }
 
     const start = new Date().getTime();
     const chapterText = getChapter();
-    const wordList = chapterText.split(/[^\w&][s]?[^a-zA-ZÀ-ÿ0-9&_]*[^\w&]|[^\w'&.(’-]/g).filter(x => x);
+    const wordList = chapterText.split(/[^\wÀ-ÿ&][s]?[^\wÀ-ÿ&_]*[^\wÀ-ÿ&]|[^\wÀ-ÿ'&.(’-]/g).filter(x => x);
+    const wordCount = wordList.length;
     const wordCountArray = countWords(wordList);
-    const charCount = chapterText.match(/[A-Za-zÀ-ÿ]|\d/g).length;
-    const sentenceCount = chapterText.match(/([!?\.)…—-]|[\.]{3})["”’]?[\s][A-Z\n“"]|.$/g).length;
+    const charCount = chapterText.match(/[\wÀ-ÿ]/g).length;
+    const sentenceCount = chapterText.match(/[.!?—-][”"'’)]?[ \n]*[“"'‘(]?[A-ZÀ-Þ]|[^\s]$/gm).length;
     const paragraphCount = chapterText.match(/\n/g).length;
+    let [syllableCount, polysCount] = countSyllablesReg(wordList);
     const functionWords = ["a","about","above","across","after","afterwards","again","against","all","almost","alone","along","already","also","although","always","am","among",
                          "amongst","amoungst","an","and","another","any","anyhow","anyone","anything","anyway","anywhere","are","around","as","at","be","became","because","been",
                          "before","beforehand","behind","being","below","beside","besides","between","beyond","both","but","by","can","cannot","could","dare","despite","did","do",
@@ -234,21 +272,28 @@ function chapterAnalyze() {
                          "thereby","therefore","therein","thereof","thereon","thereupon","these","they","third","this","those","though","through","throughout","thru","thus","to","together","too",
                          "top","toward","towards","under","until","up","upon","us","used","very","via","was","we","well","were","what","whatever","when","whence","whenever","where","whereafter",
                          "whereas","whereby","wherein","whereupon","wherever","whether","which","while","whither","who","whoever","whole","whom","whose","why","whyever","will","with",
-                         "within","without","would","yes","yet","you","your","yours","yourself","yourselves"];
+                         "within","without","would","yes","yet","you","your","yours","yourself","yourselves","said"];
     let topUncommon = [];
     for (let i = 0;topUncommon.length < 10 && i < wordCountArray.length;i++) {
         if (!functionWords.includes(wordCountArray[i][0])) {topUncommon.push(wordCountArray[i]);}
     }
-    const ARI = (4.71*(charCount/wordList.length)+.5*(wordList.length/sentenceCount)-21.43);
+    const ARI = (4.71*(charCount/wordCount)+.5*(wordCount/sentenceCount)-21.43);
+    const FRE = 206.835-1.015*(wordCount/sentenceCount)-84.6*(syllableCount/wordCount);
+    const FKGL = .39*(wordCount/sentenceCount)+11.8*(syllableCount/wordCount)-15.59;
+    const SMOG = 1.0430*Math.sqrt(polysCount*(30/sentenceCount))+3.1291;
     let HTMLString = `
                     <label>
+                        <p><b><u>Statistics</u></b></p>
                         <p>Words: <b>${wordList.length}</b></p>
                         <p>Paragraphs: <b>${paragraphCount}</b></p>
                         <p>Sentences: <b>${sentenceCount}</b></p>
-                        <p>Characters: <b>${charCount}</b></p>
                     </label>
                     <label>
+                        <p><b><u>Readability Metrics</b></u></p>
                         <p>ARI: <b>${ARI.toFixed(1)}</b> (Ages ${ARI>=15?"18-22":(Math.round(ARI)+4) + "-" + (Math.round(ARI)+5)})</p>
+                        <p>Flesch Ease: <b>${FRE.toFixed(1)}</b> (${fRResult(FRE)})</p>
+                        <p>Flesch–Kincaid: <b>${FKGL.toFixed(1)}</b> (Grade ${FKGL>=12?"12+":Math.round(FKGL)})</p>
+                        <p>SMOG: <b>${sentenceCount >= 30 ?SMOG.toFixed(1)+"</b> (Grade "+(SMOG>=12?"12+":Math.round(SMOG))+")":"Too Short!</b>"}</p>
                     </label>
                     <label>
                         ${generateWcTable("Top Uncommon",topUncommon)}
@@ -256,9 +301,9 @@ function chapterAnalyze() {
                     `;
     const chapterInfo = popUp("<i class='fa fa-info'></i> Chapter Data",250,0,"CI")
     chapterInfo.content.insertAdjacentHTML('beforeend',"<div class='std'>" + HTMLString + "</div>");
-    const UWcList = eleBuilder("LABEL",{HTML:"<a>Show All Words<i class='fa fa-angle-down'></i></a>"})
-    UWcList.addEventListener("click",function(){this.innerHTML="<div style='height:13.2rem;overflow-y:scroll;'>"+generateWcTable("All Words",wordCountArray)+"</div>";});
-    chapterInfo.content.firstChild.appendChild(UWcList);
+    const uWcList = eleBuilder("LABEL",{HTML:"<a>Show All Words<i class='fa fa-angle-down'></i></a>"})
+    uWcList.addEventListener("click",function(){this.innerHTML=`<div style='height:13.2rem;overflow-y:scroll;'>${generateWcTable("All Words",wordCountArray)}</div>`;});
+    chapterInfo.content.firstChild.appendChild(uWcList);
     chapterInfo.SetFooter("<i>Generated in " + (((new Date()).getTime() - start)/1000) + " seconds</i>");
     chapterInfo.Show();
 }
@@ -269,8 +314,6 @@ function addAnalyzer () {
 }
 
 //Settings Manager
-
-
 function setUpManager() {
     function row(label, setting) {
         const ele = document.createElement("TR");
@@ -289,25 +332,27 @@ function setUpManager() {
 
     function toggleIn(localVar) {
         const ele = eleBuilder("LABEL",{class:"toggleable-switch"});
-        const optBox = eleBuilder("INPUT",{id:localVar, type:"checkbox"});
+        const optBox = eleBuilder("INPUT",{id:localVar, type:"checkbox",event:["change",() => toggleSetting(localVar)]});
         ele.appendChild(optBox);
         ele.appendChild(document.createElement("A"));
-        optBox.addEventListener("change",() => toggleSetting(localVar));
         return ele;
     }
 
     function textIn(localVar, defaultVar) {
-        const ele = eleBuilder("INPUT",{type:"text"});
+        const ele = eleBuilder("INPUT",{type:"text",event:["change",function(){
+            datafic_settings[localVar]=verify(this.value,this);
+            localStorage["datafic-settings"]=JSON.stringify(datafic_settings);
+        }]});
         ele.value = datafic_settings[localVar]?datafic_settings[localVar]:defaultVar;
-        ele.addEventListener("change", function(){datafic_settings[localVar] = verify(this.value,this);
-        localStorage["datafic-settings"] = JSON.stringify(datafic_settings);});
         return ele;
     }
 
+    function label(description, br=0) {
+        return eleBuilder("SPAN",{HTML:(br?"<br>":"")+description});
+    }
+
     function settingDisplay() {
-        for(let i = 0; i < setList.length; i++) {
-            document.getElementById(setList[i]).checked = datafic_settings[setList[i]] === 1?true:false;
-        }
+        setList.forEach(set=>{document.getElementById(set).checked=datafic_settings[set]===1?true:false;});
     }
 
     function toggleSetting(setting) {
@@ -320,25 +365,23 @@ function setUpManager() {
         inVal = parseInt(inVal);
         return (isNaN(inVal)?(ele.style.backgroundColor = "#b97e6e",null):(ele.style.backgroundColor = "#86b75c",inVal));
     }
-  
+
     const fragment = document.createDocumentFragment();
     const dataSettingsRowHeader = eleBuilder("TR", {class:"section_header", HTML:"<td colspan='2'><b>DataFiction.net Settings</b></td>"});
     fragment.appendChild(dataSettingsRowHeader);
     const dataSettingsVV = row("Votes/Views Percentage", "datafic-VV");
-    dataSettingsVV.lastChild.appendChild(document.createElement("BR"));
-    dataSettingsVV.lastChild.appendChild(document.createTextNode("Highlight percentages above: (make blank to disable)"));
+    dataSettingsVV.lastChild.appendChild(label("Highlight percentages above: (make blank to disable)",1));
     dataSettingsVV.lastChild.appendChild(textIn("datafic-VVT", 10));
     fragment.appendChild(dataSettingsVV);
     fragment.appendChild(row("Followers/Fic Ratio","datafic-FF"));
     const dataSettingsRT = row("Personalized Reading Times","datafic-RT");
-    dataSettingsRT.lastChild.appendChild(document.createElement("BR"));
-    dataSettingsRT.lastChild.appendChild(document.createTextNode("Your reading speed, in words per minute:"));
+    dataSettingsRT.lastChild.appendChild(label("Your reading speed, in words per minute:",1));
     dataSettingsRT.lastChild.appendChild(textIn("datafic-WPM", 250));
     fragment.appendChild(dataSettingsRT);
     const dataSettingsAP = row("Average Post Schedule","datafic-AP");
     dataSettingsAP.lastChild.appendChild(document.createElement("BR"));
     dataSettingsAP.lastChild.appendChild(toggleIn("datafic-APD"));
-    dataSettingsAP.lastChild.appendChild(document.createTextNode("Display regardless of completion"));
+    dataSettingsAP.lastChild.appendChild(label("Display regardless of completion"));
     fragment.appendChild(dataSettingsAP);
     fragment.appendChild(row("Chapter Analysis", "datafic-CA"));
     document.querySelector("table.properties > tbody").appendChild(fragment);
@@ -349,9 +392,7 @@ function settingSetup() {
     let settings = {};
     if (localStorage["datafic-settings"]) {
         settings = JSON.parse(localStorage["datafic-settings"]);
-        for(let i = 0; i < setList.length; i++) {
-            if (!settings[setList[i]]) {settings[setList[i]] = 0;}
-        }
+        setList.forEach(set => {if (settings[set]===undefined) {settings[set] = 1;}});
     } else {
         settings = {"datafic-VV":1,"datafic-FF":1,"datafic-RT":0,"datafic-AP":1,"datafic-CA":1};
     }
@@ -378,4 +419,4 @@ if (datafic_settings["datafic-AP"] === 1) {averagePost();}
 if (datafic_settings["datafic-CA"] === 1 && document.getElementById("chapter_toolbar_container")) {addAnalyzer();}
 if (window.location.href.includes("manage/local-settings")) {setUpManager();}
 
-document.getElementsByClassName("block")[0].insertAdjacentHTML("beforeend","<br>DataFiction.net applied in <a>" + ((new Date()).getTime() - start)/1000 + " seconds</a>");
+document.getElementsByClassName("block")[0].insertAdjacentHTML("beforeend",`<br>DataFiction.net applied in <a>${((new Date()).getTime() - start)/1000} seconds</a>`);

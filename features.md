@@ -25,6 +25,13 @@ The Average Post Schedule feature displays the average time between a story's ch
 ## Chapter Analysis
 The Chapter Analysis feature adds an extra button to the chapter toolbar that, when clicked, will display a popup containing information about that chapter. That information includes:
 - Word, paragraph, sentence and paragraph counts
-- The chapter's [Automated Readability Index (ARI)](https://en.wikipedia.org/wiki/Automated_readability_index) score and age level
+- Readability metrics
+  - [Automated Readability Index (ARI)](https://en.wikipedia.org/wiki/Automated_readability_index) score and age level. Unlike other readability metrics, the ARI is calculated using character counts rather than syllable counts, making it the only metric that can be calculated automatically with guarenteed accuracy.
+  - [Flesch Reading Ease](https://en.wikipedia.org/wiki/Flesch%E2%80%93Kincaid_readability_tests#Flesch_reading_ease) score.
+  - [Flesch-Kinkaid Grade Level](https://en.wikipedia.org/wiki/Flesch%E2%80%93Kincaid_readability_tests#Flesch%E2%80%93Kincaid_grade_level).
+  - [SMOG](https://en.wikipedia.org/wiki/SMOG). Note that this is SMOG itself, not the SMOG Index. Although many readability scorers use the SMOG Index (oftentimes not making the distinction), it is a simplified measurement designed to be easier to calculate, rather than to be more accurate. Also note that the SMOG score is invalid when applied to texts containing less than thirty sentences (don't worry; the analyzer will remind you if this is the case).
+  
+  It is worth noting that, with the notable exception of the ARI, most reabaility metrics are syllable-based. It is impossible to accurately count syllables in English automatically with 100% accuracy, though I've done my absolute best to get close. As such, though they should be fairly accurate in most cases, these scores are *estimates*.
+  It is also worth noting that the grade levels given by these metrics are based on the standard American education system.
 - The top ten most frequent uncommon words in the text and the number of times they occur, arranged in order of prevalence
 - The number of occurances of all words in the chapter, arranged in order of prevalence (hidden initially to improve performance)

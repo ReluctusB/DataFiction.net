@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DataFiction
 // @namespace    https://github.com/ReluctusB
-// @version      1.3.2
+// @version      1.4.0
 // @description  DataFiction.net is a set of userscripts that provides useful (and more esoteric) information to users of Fimfiction.net at a glance.
 // @author       RB
 // @match        https://www.fimfiction.net/*
@@ -171,6 +171,25 @@ function averagePost() {
             footer.appendChild(fragment);
         }
     }
+}
+
+function averageChapterLength() {
+    const chapterBoxes = document.querySelectorAll("div.chapters-header + form");
+    chapterBoxes.forEach(chapterBox => {
+        const chapterLengths = chapterBox.querySelectorAll("span.word-count-number");
+        if (chapterLengths.length !== 0) {
+            let totalLength = 0;
+            chapterLengths.forEach(chapter => {
+                totalLength += parseInt(chapter.innerText.replace(/\D/g, ""));
+            });
+            let avgLength = Math.floor(totalLength/chapterLengths.length);
+            const wordCount = chapterBox.querySelectorAll(".word_count > b");
+            if (wordCount.length !== 0) {
+                document.head.appendChild(eleBuilder("STYLE",{text:".word_count {text-align:right; width:25%}"}));
+                wordCount.forEach(w => w.parentNode.insertAdjacentHTML('beforeend'," ·&nbsp;" + avgLength + "&nbsp;w/c"))
+            }
+        }
+    });
 }
 
 //Chapter Analyzer
@@ -405,6 +424,7 @@ function setUpManager() {
     dataSettingsAP.lastChild.appendChild(toggleIn("datafic-APD"));
     dataSettingsAP.lastChild.appendChild(label("Display regardless of completion"));
     fragment.appendChild(dataSettingsAP);
+    fragment.appendChild(row("Avg. Chapter Length", "datafic-CL"));
     fragment.appendChild(row("Chapter Analysis", "datafic-CA"));
     document.querySelector("table.properties > tbody").appendChild(fragment);
     settingDisplay();
@@ -416,7 +436,7 @@ function settingSetup() {
         settings = JSON.parse(localStorage["datafic-settings"]);
         setList.forEach(set => {if (settings[set]===undefined) {settings[set] = 1;}});
     } else {
-        settings = {"datafic-VV":1,"datafic-FF":1,"datafic-RT":0,"datafic-AP":1,"datafic-CA":1};
+        settings = {"datafic-VV":1,"datafic-FF":1,"datafic-RT":0,"datafic-AP":1,"datafic-CL":1,"datafic-CA":1};
     }
     localStorage["datafic-settings"] = JSON.stringify(settings);
 }
@@ -425,7 +445,7 @@ function settingSetup() {
 const start = new Date().getTime();
 const win = this.unsafeWindow || window.unsafeWindow || window;
 const version = GM_info.script.version;
-const setList = ["datafic-VV","datafic-FF","datafic-RT","datafic-AP","datafic-APD","datafic-CA"];
+const setList = ["datafic-VV","datafic-FF","datafic-RT","datafic-AP","datafic-APD","datafic-CL","datafic-CA"];
 
 if (localStorage.getItem("datafic-version") !== version || !localStorage["datafic-settings"]) {
     settingSetup();
@@ -438,6 +458,7 @@ if (datafic_settings["datafic-VV"] === 1) {voteViews();}
 if (datafic_settings["datafic-FF"] === 1 && !window.location.href.includes("manage")) {ficFollow();}
 if (datafic_settings["datafic-RT"] === 1) {readingTime();}
 if (datafic_settings["datafic-AP"] === 1) {averagePost();}
+if (datafic_settings["datafic-CL"] === 1) {averageChapterLength();}
 if (datafic_settings["datafic-CA"] === 1 && document.getElementById("chapter_toolbar_container")) {addAnalyzer();}
 if (window.location.href.includes("manage/local-settings")) {setUpManager();}
 
